@@ -47,7 +47,7 @@ def main():
         "ms_per_beat": timing_point.ms_per_beat,
         "data": objects_str,
     }
-    with open("../website/public/map.json", "w") as output_file:
+    with open("../website/src/assets/map.json", "w") as output_file:
         json.dump(json_output, output_file)
 
 
