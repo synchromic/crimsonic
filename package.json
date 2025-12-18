@@ -1,0 +1,13 @@
+{
+  "private": true,
+  "workspaces": ["website"],
+  "devDependencies": {
+    "prettier": "^3.7.4"
+  },
+  "scripts": {
+    "dev": "npm run dev --workspace=website",
+    "format": "npm run format:ts && npm run format:py",
+    "format:ts": "prettier --write '**/*.{ts,json,css,html}'",
+    "format:py": "ruff format scripts/"
+  }
+}
