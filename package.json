@@ -1,8 +1,11 @@
 {
   "private": true,
-  "workspaces": ["website"],
+  "workspaces": [
+    "website"
+  ],
   "devDependencies": {
-    "prettier": "^3.7.4"
+    "prettier": "^3.7.4",
+    "prettier-plugin-svelte": "^3.4.1"
   },
   "scripts": {
     "dev": "npm run dev --workspace=website",

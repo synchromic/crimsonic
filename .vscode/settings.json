@@ -1,5 +1,9 @@
 {
   "editor.formatOnSave": true,
+  "[svelte]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
   "[typescript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
@@ -17,5 +21,9 @@
       "source.organizeImports.ruff": "explicit"
     }
   },
-  "ruff.enable": true
+  "ruff.enable": true,
+  "python.terminal.activateEnvironment": true,
+  "python.defaultInterpreterPath": "${workspaceFolder}/scripts/.venv/bin/python",
+  "python-envs.pythonProjects": [],
+  "python.analysis.typeCheckingMode": "standard"
 }
