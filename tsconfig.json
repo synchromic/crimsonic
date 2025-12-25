@@ -1,0 +1,7 @@
+{
+  "extends": "./website/tsconfig.app.json",
+  "compilerOptions": {
+    "resolveJsonModule": true
+  },
+  "include": ["website/src/**/*"]
+}

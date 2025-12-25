@@ -1,6 +1,9 @@
 <script lang="ts">
   import { onDestroy, onMount } from "svelte";
-  import { clear, drawFrame, register } from "./canvas";
+  import { clear, drawMapFrame, drawReplayFrame, register } from "./canvas";
+  import { Replay } from "./replay";
+
+  let { replay }: { replay: Replay } = $props();
 
   let canvas: HTMLCanvasElement;
 
@@ -13,7 +16,8 @@
     const dt = newTime - curTime;
     curFrame += dt;
     clear();
-    drawFrame(curFrame, 0, 300);
+    drawMapFrame(curFrame, 0, 300);
+    drawReplayFrame(replay, curFrame, 0, 300);
     curTime = newTime;
     animationFrame = requestAnimationFrame(draw);
   }
