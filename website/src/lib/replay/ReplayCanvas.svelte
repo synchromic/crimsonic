@@ -2,37 +2,38 @@
   import { onDestroy, onMount } from "svelte";
   import { clear, drawMapFrame, drawReplayFrame, register } from "./canvas";
   import { Replay } from "./replay";
+  import { playbackState } from "../playbackState.svelte";
 
   let { replay }: { replay: Replay } = $props();
 
   let canvas: HTMLCanvasElement;
-
-  let curFrame = 12000;
-  let curTime = 0;
   let animationFrame: number | null = null;
 
-  function draw() {
-    const newTime = Date.now();
-    const dt = newTime - curTime;
-    curFrame += dt;
+  function draw(t: number) {
     clear();
-    drawMapFrame(curFrame, 0, 300);
-    drawReplayFrame(replay, curFrame, 0, 300);
-    curTime = newTime;
-    animationFrame = requestAnimationFrame(draw);
+    drawMapFrame(t, 0, 300);
+    drawReplayFrame(replay, t, 0, 300);
+    animationFrame = null;
+  }
+
+  function scheduleDraw(t: number) {
+    if (animationFrame) cancelAnimationFrame(animationFrame);
+    requestAnimationFrame(() => draw(t));
   }
 
   onMount(() => {
     register(canvas);
     updateSize();
-    curTime = Date.now();
-    draw();
   });
 
   onDestroy(() => {
     if (animationFrame) {
       cancelAnimationFrame(animationFrame);
     }
+  });
+
+  $effect(() => {
+    scheduleDraw(playbackState.time);
   });
 
   function updateSize() {
