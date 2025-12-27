@@ -9,16 +9,10 @@
   let canvas: HTMLCanvasElement;
   let animationFrame: number | null = null;
 
-  function draw(t: number) {
+  function draw(time: number) {
     clear();
-    drawMapFrame(t, 0, 300);
-    drawReplayFrame(replay, t, 0, 300);
-    animationFrame = null;
-  }
-
-  function scheduleDraw(t: number) {
-    if (animationFrame) cancelAnimationFrame(animationFrame);
-    requestAnimationFrame(() => draw(t));
+    drawMapFrame(time, 0, 300);
+    drawReplayFrame(replay, time, 0, 300);
   }
 
   onMount(() => {
@@ -26,14 +20,8 @@
     updateSize();
   });
 
-  onDestroy(() => {
-    if (animationFrame) {
-      cancelAnimationFrame(animationFrame);
-    }
-  });
-
   $effect(() => {
-    scheduleDraw(playbackState.time);
+    draw(playbackState.time);
   });
 
   function updateSize() {
