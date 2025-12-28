@@ -1,15 +1,36 @@
-// TODO: rearchitect this because this fucking sucks
-
 type PlaybackStatus = "paused" | "playing" | "playingGrabbed";
 
 class PlaybackState {
-  status: PlaybackStatus = $state("paused");
+  private _status: PlaybackStatus = $state("paused");
   time: number = $state(0);
   playStart: Date | null = null;
   playStartTime: number | null = null;
   animationFrame: number | null = null;
 
-  constructor() {}
+  get status() {
+    return this._status;
+  }
+
+  set status(newStatus: PlaybackStatus) {
+    if (this._status === newStatus) return;
+    if (this._status === "paused" && newStatus === "playing") {
+      this.startPlaying();
+      this._status = newStatus;
+    } else if (this._status === "playing" && newStatus === "paused") {
+      this.stopPlaying();
+      this._status = newStatus;
+    } else if (this._status === "playing" && newStatus === "playingGrabbed") {
+      this.stopPlaying();
+      this._status = newStatus;
+    } else if (this._status === "playingGrabbed" && newStatus === "playing") {
+      this.startPlaying();
+      this._status = newStatus;
+    } else {
+      throw new Error(
+        `Undefined playback state transition: ${this._status} -> ${newStatus}`,
+      );
+    }
+  }
 
   private updateTime() {
     if (this.playStart !== null && this.playStartTime !== null) {
@@ -22,6 +43,7 @@ class PlaybackState {
   private startPlaying() {
     this.playStart = new Date();
     this.playStartTime = this.time;
+    if (this.animationFrame) cancelAnimationFrame(this.animationFrame);
     this.animationFrame = requestAnimationFrame(() => this.updateTime());
   }
 
@@ -29,27 +51,6 @@ class PlaybackState {
     this.playStart = null;
     this.playStartTime = null;
     if (this.animationFrame) cancelAnimationFrame(this.animationFrame);
-  }
-
-  setStatus(newStatus: PlaybackStatus) {
-    if (this.status === newStatus) return;
-    if (this.status === "paused" && newStatus === "playing") {
-      this.startPlaying();
-      this.status = newStatus;
-    } else if (this.status === "playing" && newStatus === "paused") {
-      this.stopPlaying();
-      this.status = newStatus;
-    } else if (this.status === "playing" && newStatus === "playingGrabbed") {
-      this.stopPlaying();
-      this.status = newStatus;
-    } else if (this.status === "playingGrabbed" && newStatus === "playing") {
-      this.startPlaying();
-      this.status = newStatus;
-    } else {
-      throw new Error(
-        `Undefined playback state transition: ${this.status} -> ${newStatus}`,
-      );
-    }
   }
 }
 

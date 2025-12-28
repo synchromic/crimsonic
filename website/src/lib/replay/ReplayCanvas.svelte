@@ -7,7 +7,6 @@
   let { replay }: { replay: Replay } = $props();
 
   let canvas: HTMLCanvasElement;
-  let animationFrame: number | null = null;
 
   function draw(time: number) {
     clear();
@@ -33,6 +32,3 @@
 <canvas bind:this={canvas} onresize={updateSize}>
   Javascript is not supported in your browser.
 </canvas>
-
-<style>
-</style>

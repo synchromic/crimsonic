@@ -17,13 +17,13 @@
 
   function onmousedown() {
     if (playbackState.status === "playing") {
-      playbackState.setStatus("playingGrabbed");
+      playbackState.status = "playingGrabbed";
     }
   }
 
   function onmouseup() {
     if (playbackState.status === "playingGrabbed") {
-      playbackState.setStatus("playing");
+      playbackState.status = "playing";
     }
   }
 
@@ -37,13 +37,13 @@
 {#if playbackState.status === "playing" || playbackState.status === "playingGrabbed"}
   <button
     onclick={() => {
-      playbackState.setStatus("paused");
+      playbackState.status = "paused";
     }}>Pause</button
   >
 {:else if playbackState.status === "paused"}
   <button
     onclick={() => {
-      playbackState.setStatus("playing");
+      playbackState.status = "playing";
     }}>Play</button
   >
 {/if}
