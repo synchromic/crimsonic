@@ -49,12 +49,14 @@ def parse_map():
     json_output = {
         "start_offset": int(timing_point.offset / ONE_MS),
         "ms_per_beat": timing_point.ms_per_beat,
+        "od": map.overall_difficulty,
         "data": objects_str,
     }
     path = "../website/src/assets/map.json"
     with open(path, "w") as output_file:
         print(f"Writing map to {path}")
         json.dump(json_output, output_file)
+    return json_output
 
 
 def key_to_char(key):
@@ -136,10 +138,84 @@ def parse_replay(path):
     }
 
 
-def parse_replays():
+def hit_windows(od):
+    return {
+        "great": 50 - 3 * od,
+        "ok": 120 - 8 * od if od <= 5 else 110 - 6 * od,
+        "miss": 135 - 8 * od if od <= 5 else 120 - 5 * od,
+    }
+
+
+def key_is_good(obj, key):
+    return obj == key.lower()
+
+
+def score_replay(map, replay):
+    windows = hit_windows(map["od"])
+    beat_index = 0
+    press_index = 0
+    press_time = 0
+    output = []
+    while beat_index < len(map["data"]) and map["data"][beat_index] == " ":
+        beat_index += 1
+    while beat_index < len(map["data"]):
+        cur_beat_time = map["start_offset"] + (beat_index / 4) * map["ms_per_beat"]
+        cur_press_time = (
+            press_time + replay["press_time_deltas"][press_index]
+            if press_index < len(replay["keys"])
+            else 1e10
+        )
+        next_beat = True
+        next_press = True
+        err = round(cur_press_time - cur_beat_time)
+        if abs(err) < windows["great"]:
+            output.append("3")
+        elif abs(err) < windows["ok"]:
+            output.append("1")
+        elif err < 0 and abs(err) < windows["miss"]:
+            output.append("x")
+        elif err < 0:
+            next_beat = False  # press was way too early, beat isn't judged
+        else:
+            # press was late, beat missed
+            output.append("x")
+            next_press = False
+        if next_beat:
+            if press_index >= len(replay["keys"]) or not key_is_good(
+                map["data"][beat_index], replay["keys"][press_index]
+            ):
+                output[-1] = "x"
+            beat_index += 1
+            while beat_index < len(map["data"]) and map["data"][beat_index] == " ":
+                beat_index += 1
+        if next_press and press_index < len(replay["keys"]):
+            press_time += replay["press_time_deltas"][press_index]
+            press_index += 1
+    return "".join(output)
+
+
+def parse_replays(map):
     replays = []
     for path in os.listdir("replays"):
         replays.append(parse_replay(path))
+    replays.sort(key=lambda r: r["date"])
+
+    print("Scoring replays")
+    error_count = 0
+    for replay in replays:
+        scores = score_replay(map, replay)
+        replay["scores"] = scores
+        # check judgements
+        for j, c in [("300", "3"), ("100", "1"), ("miss", "x")]:
+            calc = scores.count(c)
+            should = replay["judgements"][j]
+            date = replay["date"]
+            if calc != should:
+                print(
+                    f"Mismatched {j} count in replay {date}: should be {should}, computed {calc}"
+                )
+                error_count += abs(calc - should)
+    print(f"Total errors: {error_count}")
 
     json_output = [
         {
@@ -154,28 +230,16 @@ def parse_replays():
     with open(path, "w") as output_file:
         print(f"Writing replays to {path}")
         json.dump(json_output, output_file, separators=(",", ":"))
+    return replays
 
 
 def main():
-    print("crimsonic data parsing script")
-    print("enter 1 to parse map")
-    print("enter 2 to parse replays")
-    try:
-        selection = int(input("selection: "))
-    except ValueError:
-        print("invalid selection")
-        exit()
-    match selection:
-        case 1:
-            print("Parsing map...")
-            parse_map()
-            print("Done parsing map.")
-        case 2:
-            print("Parsing replays...")
-            parse_replays()
-            print("Done parsing replays.")
-        case _:
-            print("invalid selection")
+    print("Parsing map...")
+    map = parse_map()
+    print("Done parsing map.")
+    print("Parsing replays...")
+    parse_replays(map)
+    print("Done parsing replays.")
 
 
 if __name__ == "__main__":

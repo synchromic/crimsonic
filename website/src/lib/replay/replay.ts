@@ -10,6 +10,7 @@ interface JSONReplay {
   keys: string;
   press_time_deltas: number[];
   release_time_deltas: number[];
+  scores: string;
 }
 
 export enum ReplayKey {
@@ -44,10 +45,12 @@ export interface ReplayEvent {
 
 export class Replay {
   date: Date;
+  scores: string;
   private eventTree: IntervalTree<ReplayKey>;
 
   constructor(json: JSONReplay) {
     this.date = new Date(json.date);
+    this.scores = json.scores;
     this.eventTree = new IntervalTree();
     const pressTimes = fromDeltas(json.press_time_deltas);
     const releaseTimes = fromDeltas(json.release_time_deltas);

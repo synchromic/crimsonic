@@ -5,6 +5,7 @@
   import Scrubber from "./lib/Scrubber.svelte";
 
   let testReplay = new Replay(replays[replays.length - 1]);
+  console.log(testReplay.scores);
 </script>
 
 <main>
