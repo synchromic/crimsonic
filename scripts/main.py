@@ -157,6 +157,7 @@ def score_replay(map, replay):
     press_time = 0
     output = []
     while beat_index < len(map["data"]) and map["data"][beat_index] == " ":
+        output.append(" ")
         beat_index += 1
     while beat_index < len(map["data"]):
         cur_beat_time = map["start_offset"] + (beat_index / 4) * map["ms_per_beat"]
@@ -187,6 +188,7 @@ def score_replay(map, replay):
                 output[-1] = "x"
             beat_index += 1
             while beat_index < len(map["data"]) and map["data"][beat_index] == " ":
+                output.append(" ")
                 beat_index += 1
         if next_press and press_index < len(replay["keys"]):
             press_time += replay["press_time_deltas"][press_index]

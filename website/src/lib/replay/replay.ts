@@ -27,6 +27,18 @@ const replayKeyCharMap: { [keyChar: string]: ReplayKey } = {
   K: ReplayKey.RightKat,
 };
 
+export enum ReplayScore {
+  Great,
+  Ok,
+  Miss,
+}
+
+const replayScoreCharMap: { [scoreChar: string]: ReplayScore } = {
+  "3": ReplayScore.Great,
+  "1": ReplayScore.Ok,
+  x: ReplayScore.Miss,
+};
+
 function fromDeltas(arr: number[]) {
   let acc = 0;
   let res = [];
@@ -70,5 +82,11 @@ export class Replay {
         releaseTime: interval.high as number,
       };
     });
+  }
+
+  scoreAt(index: number): ReplayScore | null {
+    const char = this.scores.charAt(index);
+    if (char === " ") return null;
+    return replayScoreCharMap[this.scores.charAt(index)];
   }
 }

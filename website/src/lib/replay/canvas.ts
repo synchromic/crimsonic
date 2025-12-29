@@ -1,5 +1,5 @@
 import map from "../../assets/map.json";
-import { Replay, ReplayKey } from "./replay";
+import { Replay, ReplayKey, ReplayScore } from "./replay";
 
 // how many lane-heights should a beat be wide
 const beatWidth = 1.4;
@@ -15,18 +15,20 @@ function msToBeat(ms: number) {
 let canvas: HTMLCanvasElement | null = null;
 let ctx: CanvasRenderingContext2D | null = null;
 
+function receptorX(h: number) {
+  return h / 2;
+}
+
 // t is current frame time, h is lane height
 function posToMs(t: number, h: number, x: number) {
   const pixelsPerMs = (beatWidth / map.ms_per_beat) * h;
-  const receptorX = h / 2;
-  return (x - receptorX) / pixelsPerMs + t;
+  return (x - receptorX(h)) / pixelsPerMs + t;
 }
 
 // t is current frame time, h is lane height, ms is time of object, returns x position of object
 function msToPos(t: number, h: number, ms: number) {
   const pixelsPerMs = (beatWidth / map.ms_per_beat) * h;
-  const receptorX = h / 2;
-  return (ms - t) * pixelsPerMs + receptorX;
+  return (ms - t) * pixelsPerMs + receptorX(h);
 }
 
 export function register(elem: HTMLCanvasElement) {
@@ -50,20 +52,28 @@ function drawBeat(x: number, y: number, r: number, kind: string) {
   ctx.stroke();
 }
 
-// t: time in ms, y: y offset, h: height
-export function drawMapFrame(t: number, y: number, h: number) {
-  if (!ctx || !canvas) throw new Error("canvas has not loaded");
+// Yields each visible note on the canvas, plus some leeway, in reverse order
+// Note is a sixteenth note (1/4 beat); index into map data
+const leeway = 1.0; // beats
+function* visibleNotes(t: number, w: number, h: number) {
   const leftBeat = msToBeat(posToMs(t, h, 0));
-  const rightBeat = msToBeat(posToMs(t, h, canvas.width));
-  const leeway = 1.0; // beats
+  const rightBeat = msToBeat(posToMs(t, h, w));
   const startIndex = Math.max(0, Math.floor((leftBeat - leeway) * 4)); // *4 because four notes per beat
   const endIndex = Math.min(
     map.data.length - 1,
     Math.floor((rightBeat + leeway) * 4),
   );
+  for (let i = endIndex; i >= startIndex; i--) {
+    yield i;
+  }
+}
+
+// t: time in ms, y: y offset, h: height
+export function drawMapFrame(t: number, y: number, h: number) {
+  if (!ctx || !canvas) throw new Error("canvas has not loaded");
   // go back to front because we want to draw earlier notes on top
   const noteRadius = h / 5;
-  for (let i = endIndex; i >= startIndex; i--) {
+  for (const i of visibleNotes(t, canvas.width, h)) {
     if (map.data.charAt(i) === " ") continue;
     const beat = i / 4;
     const x = msToPos(t, h, beatToMs(beat));
@@ -99,7 +109,19 @@ function keyToData(
   }
 }
 
+function scoreColor(score: ReplayScore) {
+  switch (score) {
+    case ReplayScore.Great:
+      return "#00FFFF";
+    case ReplayScore.Ok:
+      return "#00AA00";
+    case ReplayScore.Miss:
+      return "#FF0000";
+  }
+}
+
 const impactWidth = 1 / 25; // lane heights
+const scoreHeight = 1 / 12;
 export function drawReplayFrame(
   replay: Replay,
   t: number,
@@ -109,13 +131,26 @@ export function drawReplayFrame(
   if (!ctx || !canvas) throw new Error("canvas has not loaded");
   const leftMs = posToMs(t, h, 0);
   const rightMs = posToMs(t, h, canvas.width);
-  const leeway = map.ms_per_beat;
-  const events = replay.eventsIntersecting(leftMs - leeway, rightMs + leeway);
+  const events = replay.eventsIntersecting(
+    leftMs - leeway * map.ms_per_beat,
+    rightMs + leeway * map.ms_per_beat,
+  );
   for (const event of events) {
     const eventX = msToPos(t, h, event.pressTime) - (impactWidth * h) / 2;
     const eventW = impactWidth * h;
     const [eventY, eventH, color] = keyToData(event.key, y, h);
     ctx.fillStyle = color;
     ctx.fillRect(eventX, eventY, eventW, eventH);
+  }
+
+  // draw scoring indicators
+  for (const i of visibleNotes(t, canvas.width, h)) {
+    const score = replay.scoreAt(i);
+    if (score === null) continue;
+    const beat = i / 4;
+    const width = (beatWidth / 4) * h;
+    const x = msToPos(t, h, beatToMs(beat)) - width / 2;
+    ctx.fillStyle = scoreColor(score);
+    ctx.fillRect(x, y, width, y + scoreHeight * h);
   }
 }
