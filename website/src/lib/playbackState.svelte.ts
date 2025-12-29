@@ -43,8 +43,11 @@ class PlaybackState {
   private startPlaying() {
     this.playStart = new Date();
     this.playStartTime = this.time;
-    if (this.animationFrame) cancelAnimationFrame(this.animationFrame);
-    this.animationFrame = requestAnimationFrame(() => this.updateTime());
+    if (this.animationFrame) {
+      // hopefully prevent multiple animation frames from scheduling
+      cancelAnimationFrame(this.animationFrame);
+    }
+    this.updateTime();
   }
 
   private stopPlaying() {

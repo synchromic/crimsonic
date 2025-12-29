@@ -4,8 +4,30 @@ import { Replay, ReplayKey } from "./replay";
 // how many lane-heights should a beat be wide
 const beatWidth = 1.4;
 
+function beatToMs(beat: number) {
+  return beat * map.ms_per_beat + map.start_offset;
+}
+
+function msToBeat(ms: number) {
+  return (ms - map.start_offset) / map.ms_per_beat;
+}
+
 let canvas: HTMLCanvasElement | null = null;
 let ctx: CanvasRenderingContext2D | null = null;
+
+// t is current frame time, h is lane height
+function posToMs(t: number, h: number, x: number) {
+  const pixelsPerMs = (beatWidth / map.ms_per_beat) * h;
+  const receptorX = h / 2;
+  return (x - receptorX) / pixelsPerMs + t;
+}
+
+// t is current frame time, h is lane height, ms is time of object, returns x position of object
+function msToPos(t: number, h: number, ms: number) {
+  const pixelsPerMs = (beatWidth / map.ms_per_beat) * h;
+  const receptorX = h / 2;
+  return (ms - t) * pixelsPerMs + receptorX;
+}
 
 export function register(elem: HTMLCanvasElement) {
   canvas = elem;
@@ -17,13 +39,22 @@ export function clear() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
 
+function drawBeat(x: number, y: number, r: number, kind: string) {
+  if (!ctx) return;
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, 2 * Math.PI);
+  ctx.fillStyle = kind === "d" ? "#990000" : "#000099";
+  ctx.fill();
+  ctx.lineWidth = 4.0;
+  ctx.strokeStyle = "#ffffff";
+  ctx.stroke();
+}
+
 // t: time in ms, y: y offset, h: height
 export function drawMapFrame(t: number, y: number, h: number) {
   if (!ctx || !canvas) throw new Error("canvas has not loaded");
-  const curBeat = (t - map.start_offset) / map.ms_per_beat;
-  const receptorX = h / 2;
-  const leftBeat = curBeat - receptorX / h / beatWidth;
-  const rightBeat = curBeat + (canvas.width - receptorX) / h / beatWidth;
+  const leftBeat = msToBeat(posToMs(t, h, 0));
+  const rightBeat = msToBeat(posToMs(t, h, canvas.width));
   const leeway = 1.0; // beats
   const startIndex = Math.max(0, Math.floor((leftBeat - leeway) * 4)); // *4 because four notes per beat
   const endIndex = Math.min(
@@ -35,7 +66,7 @@ export function drawMapFrame(t: number, y: number, h: number) {
   for (let i = endIndex; i >= startIndex; i--) {
     if (map.data.charAt(i) === " ") continue;
     const beat = i / 4;
-    const x = receptorX + (beat - curBeat) * beatWidth * h;
+    const x = msToPos(t, h, beatToMs(beat));
     if (i % 16 === 0) {
       // bar line
       ctx.beginPath();
@@ -45,13 +76,7 @@ export function drawMapFrame(t: number, y: number, h: number) {
       ctx.strokeStyle = "#ffffff";
       ctx.stroke();
     }
-    ctx.beginPath();
-    ctx.arc(x, y + h / 2, noteRadius, 0, 2 * Math.PI);
-    ctx.fillStyle = map.data.charAt(i) === "d" ? "#990000" : "#000099";
-    ctx.fill();
-    ctx.lineWidth = 4.0;
-    ctx.strokeStyle = "#ffffff";
-    ctx.stroke();
+    drawBeat(x, y + h / 2, noteRadius, map.data.charAt(i));
   }
 }
 
@@ -82,15 +107,12 @@ export function drawReplayFrame(
   h: number,
 ) {
   if (!ctx || !canvas) throw new Error("canvas has not loaded");
-  const msWidth = beatWidth / map.ms_per_beat;
-  const receptorX = h / 2;
-  const leftMs = t - receptorX / h / msWidth;
-  const rightMs = t + (canvas.width - receptorX) / h / msWidth;
+  const leftMs = posToMs(t, h, 0);
+  const rightMs = posToMs(t, h, canvas.width);
   const leeway = map.ms_per_beat;
   const events = replay.eventsIntersecting(leftMs - leeway, rightMs + leeway);
   for (const event of events) {
-    const eventX =
-      receptorX + (event.pressTime - t) * msWidth * h - (impactWidth * h) / 2;
+    const eventX = msToPos(t, h, event.pressTime) - (impactWidth * h) / 2;
     const eventW = impactWidth * h;
     const [eventY, eventH, color] = keyToData(event.key, y, h);
     ctx.fillStyle = color;
