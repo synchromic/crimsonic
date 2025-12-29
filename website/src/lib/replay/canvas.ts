@@ -8,7 +8,7 @@ function beatToMs(beat: number) {
   return beat * map.ms_per_beat + map.start_offset;
 }
 
-function msToBeat(ms: number) {
+export function msToBeat(ms: number) {
   return (ms - map.start_offset) / map.ms_per_beat;
 }
 

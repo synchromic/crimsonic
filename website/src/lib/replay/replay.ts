@@ -14,30 +14,17 @@ interface JSONReplay {
 }
 
 export enum ReplayKey {
-  LeftDon,
-  LeftKat,
-  RightDon,
-  RightKat,
+  LeftDon = "d",
+  LeftKat = "k",
+  RightDon = "D",
+  RightKat = "K",
 }
-
-const replayKeyCharMap: { [keyChar: string]: ReplayKey } = {
-  d: ReplayKey.LeftDon,
-  k: ReplayKey.LeftKat,
-  D: ReplayKey.RightDon,
-  K: ReplayKey.RightKat,
-};
 
 export enum ReplayScore {
-  Great,
-  Ok,
-  Miss,
+  Great = "3",
+  Ok = "1",
+  Miss = "x",
 }
-
-const replayScoreCharMap: { [scoreChar: string]: ReplayScore } = {
-  "3": ReplayScore.Great,
-  "1": ReplayScore.Ok,
-  x: ReplayScore.Miss,
-};
 
 function fromDeltas(arr: number[]) {
   let acc = 0;
@@ -55,9 +42,41 @@ export interface ReplayEvent {
   releaseTime: number;
 }
 
+class ScorePrefixSums {
+  length: number;
+  sums: { [scoreType: string]: number[] };
+
+  constructor(scores: string) {
+    this.length = scores.length;
+    this.sums = {
+      "3": [],
+      "1": [],
+      x: [],
+    };
+    let cum: { [scoreType: string]: number } = {
+      "3": 0,
+      "1": 0,
+      x: 0,
+    };
+    for (let i = 0; i < scores.length; i++) {
+      cum[scores.charAt(i)]++;
+      for (const scoreType of ["3", "1", "x"]) {
+        this.sums[scoreType].push(cum[scoreType]);
+      }
+    }
+  }
+
+  query(scoreType: ReplayScore, index: number) {
+    if (index < 0) return 0;
+    if (index >= this.length) index = this.length - 1;
+    return this.sums[scoreType][index];
+  }
+}
+
 export class Replay {
   date: Date;
   scores: string;
+  scorePrefixSums: ScorePrefixSums;
   private eventTree: IntervalTree<ReplayKey>;
 
   constructor(json: JSONReplay) {
@@ -69,9 +88,10 @@ export class Replay {
     for (let i = 0; i < json.keys.length; i++) {
       this.eventTree.insert(
         [pressTimes[i], releaseTimes[i]],
-        replayKeyCharMap[json.keys.charAt(i)],
+        json.keys.charAt(i) as ReplayKey,
       );
     }
+    this.scorePrefixSums = new ScorePrefixSums(this.scores);
   }
 
   eventsIntersecting(start: number, end: number): ReplayEvent[] {
@@ -87,6 +107,6 @@ export class Replay {
   scoreAt(index: number): ReplayScore | null {
     const char = this.scores.charAt(index);
     if (char === " ") return null;
-    return replayScoreCharMap[this.scores.charAt(index)];
+    return this.scores.charAt(index) as ReplayScore;
   }
 }
