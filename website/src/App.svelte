@@ -7,10 +7,6 @@
   import Audio from "./lib/Audio.svelte";
   import ReplayPicker from "./lib/ReplayPicker.svelte";
   import { pickedReplay } from "./lib/pickerState.svelte";
-
-  let testReplay = new Replay(
-    replays.find((r) => r.date === "2025-03-13 01:34:52.675568+00:00")!,
-  );
 </script>
 
 <main>

@@ -1,7 +1,8 @@
 import IntervalTree from "@flatten-js/interval-tree";
 
-interface JSONReplay {
+export interface JSONReplay {
   date: string;
+  accuracy: number;
   judgements: {
     "300": number;
     "100": number;

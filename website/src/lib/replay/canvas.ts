@@ -121,10 +121,9 @@ export function drawReplayFrame(
 
   // go back to front because we want to draw earlier notes on top
   for (const i of visibleNotes(t, canvas.width, h)) {
-    if (map.data.charAt(i) === " ") continue;
     const beat = i / 4;
     const x = msToPos(t, h, beatToMs(beat));
-    if (i % 16 === 0) {
+    if (Math.abs(i) % 16 === 0) {
       // bar line
       ctx.beginPath();
       ctx.moveTo(x, y);
@@ -134,6 +133,7 @@ export function drawReplayFrame(
       ctx.stroke();
     }
 
+    if (map.data.charAt(i) === " ") continue;
     // dim if note was hit and past receptor
     const score = replay.scoreAt(i);
     const dim = score !== ReplayScore.Miss && beatToMs(beat) < t;

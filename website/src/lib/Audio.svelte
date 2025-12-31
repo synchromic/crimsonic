@@ -7,7 +7,7 @@
   let element: HTMLAudioElement;
 
   // purely based off vibes
-  const hitsoundOffset = 8; // +10 = 10 ms later
+  const hitsoundOffset = 12; // +10 = 10 ms later
   const audioCtx = new AudioContext();
 
   let source: MediaElementAudioSourceNode | undefined;
@@ -93,6 +93,8 @@
 
   $effect(() => {
     if (playbackState.status !== "playing") {
+      if (playbackState.time < 0)
+        console.warn("Setting to negative time!", playbackState.time);
       element.currentTime = playbackState.time / 1000;
       cancelHitsounds();
     }

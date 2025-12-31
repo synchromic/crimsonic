@@ -129,8 +129,12 @@ def parse_replay(path):
     releases = np.array([ev["release_time"] for ev in events], dtype=np.int32)
     releases[1:] = np.ediff1d(releases)
 
+    total_notes = judgements["300"] + judgements["100"] + judgements["miss"]
+    accuracy = (judgements["300"] + judgements["100"] / 3) / total_notes
+
     return {
         "date": replay.timestamp,
+        "accuracy": accuracy,
         "judgements": judgements,
         "keys": "".join(keys),
         "press_time_deltas": presses,
