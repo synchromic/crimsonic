@@ -1,8 +1,9 @@
 type PlaybackStatus = "paused" | "playing" | "playingGrabbed";
 
 class PlaybackState {
+  ready = $state(false);
   private _status: PlaybackStatus = $state("paused");
-  time: number = $state(0);
+  time = $state(0);
   playStart: Date | null = null;
   playStartTime: number | null = null;
   animationFrame: number | null = null;
@@ -12,6 +13,7 @@ class PlaybackState {
   }
 
   set status(newStatus: PlaybackStatus) {
+    if (!this.ready) return;
     if (this._status === newStatus) return;
     if (this._status === "paused" && newStatus === "playing") {
       this.startPlaying();
@@ -32,10 +34,18 @@ class PlaybackState {
     }
   }
 
+  // more accurate time that isn't just updated every animation frame
+  computeTime() {
+    if (this.playStart === null || this.playStartTime === null)
+      return this.time;
+    return (
+      this.playStartTime + (new Date().getTime() - this.playStart.getTime())
+    );
+  }
+
   private updateTime() {
     if (this.playStart !== null && this.playStartTime !== null) {
-      this.time =
-        this.playStartTime + (new Date().getTime() - this.playStart.getTime());
+      this.time = this.computeTime();
       this.animationFrame = requestAnimationFrame(() => this.updateTime());
     }
   }

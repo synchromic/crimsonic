@@ -34,7 +34,9 @@
   });
 </script>
 
-{#if playbackState.status === "playing" || playbackState.status === "playingGrabbed"}
+{#if !playbackState.ready}
+  Loading...
+{:else if playbackState.status === "playing" || playbackState.status === "playingGrabbed"}
   <button
     onclick={() => {
       playbackState.status = "paused";

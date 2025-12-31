@@ -14,7 +14,7 @@
 <main>
   <p>hello!</p>
 </main>
-<Audio />
+<Audio playingReplay={testReplay} />
 <Scrubber />
 <Stats replay={testReplay} />
 <ReplayCanvas replay={testReplay} />

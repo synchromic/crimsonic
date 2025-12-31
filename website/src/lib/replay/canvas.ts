@@ -115,8 +115,9 @@ export function drawReplayFrame(
   // draw receptor
   ctx.beginPath();
   ctx.arc(receptorX(h), h / 2, receptorRadius * h, 0, 2 * Math.PI);
-  ctx.fillStyle = "#777777";
-  ctx.fill();
+  ctx.strokeStyle = "#777777";
+  ctx.lineWidth = 4.0;
+  ctx.stroke();
 
   // go back to front because we want to draw earlier notes on top
   for (const i of visibleNotes(t, canvas.width, h)) {
@@ -158,7 +159,7 @@ export function drawReplayFrame(
     const score = replay.scoreAt(i);
     if (score === null) continue;
     const beat = i / 4;
-    const width = (beatWidth / 4) * h;
+    const width = Math.min((beatWidth / 4) * h, 2 * noteRadius * h);
     const x = msToPos(t, h, beatToMs(beat)) - width / 2;
     ctx.fillStyle = scoreColor(score);
     ctx.fillRect(x, y, width, y + scoreHeight * h);

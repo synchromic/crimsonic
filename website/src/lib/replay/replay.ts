@@ -37,9 +37,15 @@ function fromDeltas(arr: number[]) {
 }
 
 export interface ReplayEvent {
+  id: number;
   key: ReplayKey;
   pressTime: number;
   releaseTime: number;
+}
+
+interface TreeValue {
+  id: number;
+  key: ReplayKey;
 }
 
 class ScorePrefixSums {
@@ -77,7 +83,7 @@ export class Replay {
   date: Date;
   scores: string;
   scorePrefixSums: ScorePrefixSums;
-  private eventTree: IntervalTree<ReplayKey>;
+  private eventTree: IntervalTree<TreeValue>;
 
   constructor(json: JSONReplay) {
     this.date = new Date(json.date);
@@ -86,18 +92,19 @@ export class Replay {
     const pressTimes = fromDeltas(json.press_time_deltas);
     const releaseTimes = fromDeltas(json.release_time_deltas);
     for (let i = 0; i < json.keys.length; i++) {
-      this.eventTree.insert(
-        [pressTimes[i], releaseTimes[i]],
-        json.keys.charAt(i) as ReplayKey,
-      );
+      this.eventTree.insert([pressTimes[i], releaseTimes[i]], {
+        id: i,
+        key: json.keys.charAt(i) as ReplayKey,
+      });
     }
     this.scorePrefixSums = new ScorePrefixSums(this.scores);
   }
 
   eventsIntersecting(start: number, end: number): ReplayEvent[] {
-    return this.eventTree.search([start, end], (replayKey, interval) => {
+    return this.eventTree.search([start, end], (treeValue, interval) => {
       return {
-        key: replayKey,
+        id: treeValue.id,
+        key: treeValue.key,
         pressTime: interval.low as number,
         releaseTime: interval.high as number,
       };
