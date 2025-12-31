@@ -23,11 +23,20 @@
   });
 
   function updateSize() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    canvas.width = canvas.parentElement!.clientWidth;
+    canvas.height = canvas.parentElement!.clientHeight;
   }
 </script>
 
-<canvas bind:this={canvas} onresize={updateSize}>
-  Javascript is not supported in your browser.
-</canvas>
+<div>
+  <canvas bind:this={canvas} onresize={updateSize}>
+    Javascript is not supported in your browser.
+  </canvas>
+</div>
+
+<style>
+  div {
+    width: 100%;
+    height: 100%;
+  }
+</style>

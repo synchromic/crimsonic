@@ -9,14 +9,12 @@
   import { pickedReplay } from "./lib/pickerState.svelte";
 </script>
 
-<main>
-  <p>hello!</p>
-</main>
+<p>hello!</p>
 <Audio playingReplay={pickedReplay.replay ?? undefined} />
 <ReplayPicker />
 <br />
 {#if pickedReplay.replay}
-  <Scrubber />
   <Stats replay={pickedReplay.replay} />
+  <Scrubber />
   <ReplayCanvas replay={pickedReplay.replay} />
 {/if}

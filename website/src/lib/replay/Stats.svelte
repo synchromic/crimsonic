@@ -16,19 +16,39 @@
   let accuracy = $derived(((greats + oks / 3) / (greats + oks + misses)) * 100);
 </script>
 
-<table>
-  <tbody>
-    <tr>
-      <th>Accuracy</th>
-      <th>300s</th>
-      <th>100s</th>
-      <th>Misses</th>
-    </tr>
-    <tr>
-      <td>{accuracy.toFixed(2)}</td>
-      <td>{greats}</td>
-      <td>{oks}</td>
-      <td>{misses}</td>
-    </tr>
-  </tbody>
-</table>
+<div>
+  <table>
+    <tbody>
+      <tr>
+        <th>Accuracy</th>
+        <th>300s</th>
+        <th>100s</th>
+        <th>Misses</th>
+      </tr>
+      <tr>
+        <td>{accuracy.toFixed(2)}</td>
+        <td>{greats}</td>
+        <td>{oks}</td>
+        <td>{misses}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<style>
+  div {
+    margin: 10px 0;
+  }
+
+  table,
+  th,
+  td {
+    border: 1px solid;
+    border-collapse: collapse;
+  }
+
+  th,
+  td {
+    padding: 5px;
+  }
+</style>

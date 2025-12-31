@@ -34,29 +34,43 @@
   });
 </script>
 
-{#if !playbackState.ready}
-  Loading...
-{:else if playbackState.status === "playing" || playbackState.status === "playingGrabbed"}
-  <button
-    onclick={() => {
-      playbackState.status = "paused";
-    }}>Pause</button
-  >
-{:else if playbackState.status === "paused"}
-  <button
-    onclick={() => {
-      playbackState.status = "playing";
-    }}>Play</button
-  >
-{/if}
-<input
-  type="range"
-  min={0}
-  max={mapLen}
-  step="any"
-  {oninput}
-  {onmousedown}
-  {onmouseup}
-  bind:value
-  style="width: 100%;"
-/>
+<div>
+  {#if !playbackState.ready}
+    Loading...
+  {:else if playbackState.status === "playing" || playbackState.status === "playingGrabbed"}
+    <button
+      onclick={() => {
+        playbackState.status = "paused";
+      }}>Pause</button
+    >
+  {:else if playbackState.status === "paused"}
+    <button
+      onclick={() => {
+        playbackState.status = "playing";
+      }}>Play</button
+    >
+  {/if}
+  <input
+    type="range"
+    min={0}
+    max={mapLen}
+    step="any"
+    {oninput}
+    {onmousedown}
+    {onmouseup}
+    bind:value
+    style="width: 100%;"
+  />
+</div>
+
+<style>
+  div {
+    display: flex;
+    margin: 10px 0;
+  }
+
+  button {
+    min-width: 60px;
+    margin-right: 10px;
+  }
+</style>

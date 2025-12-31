@@ -2,6 +2,7 @@
   import { onDestroy, onMount } from "svelte";
   import { playbackState } from "./playbackState.svelte";
   import type { Replay } from "./replay/replay";
+  import VolumeSlider from "./VolumeSlider.svelte";
 
   let { playingReplay }: { playingReplay?: Replay } = $props();
   let element: HTMLAudioElement;
@@ -9,6 +10,13 @@
   // purely based off vibes
   const hitsoundOffset = 12; // +10 = 10 ms later
   const audioCtx = new AudioContext();
+
+  let masterGain = audioCtx.createGain();
+  masterGain.connect(audioCtx.destination);
+  let musicGain = audioCtx.createGain();
+  musicGain.connect(masterGain);
+  let effectGain = audioCtx.createGain();
+  effectGain.connect(masterGain);
 
   let source: MediaElementAudioSourceNode | undefined;
   let donBuffer: AudioBuffer | undefined;
@@ -33,7 +41,7 @@
   function playHitsound(which: "don" | "kat", time: number) {
     const buffer = which === "don" ? donBuffer : katBuffer;
     const source = new AudioBufferSourceNode(audioCtx, { buffer });
-    source.connect(audioCtx.destination);
+    source.connect(effectGain);
     source.start(time);
     return source;
   }
@@ -110,7 +118,7 @@
       addLoaded();
     });
     source = audioCtx.createMediaElementSource(element);
-    source.connect(audioCtx.destination);
+    source.connect(musicGain);
     addLoaded();
   });
 
@@ -120,4 +128,24 @@
   });
 </script>
 
-<audio src="audio.ogg" bind:this={element}></audio>
+<div>
+  <audio src="audio.ogg" bind:this={element}></audio>
+  <VolumeSlider
+    {audioCtx}
+    initial={0.3}
+    gainNode={masterGain}
+    label="Master volume"
+  />
+  <VolumeSlider
+    {audioCtx}
+    initial={1}
+    gainNode={musicGain}
+    label="Music volume"
+  />
+  <VolumeSlider
+    {audioCtx}
+    initial={0.8}
+    gainNode={effectGain}
+    label="Hitsound volume"
+  />
+</div>

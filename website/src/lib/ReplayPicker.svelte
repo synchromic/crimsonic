@@ -28,10 +28,12 @@
   });
 </script>
 
-<label for="replaySelect">Pick a replay: </label>
-<select id="replaySelect" bind:value={picked}>
-  <option value={null} selected></option>
-  {#each replays as replay}
-    <option value={replay.date}>{formatReplay(replay)}</option>
-  {/each}
-</select>
+<div>
+  <label for="replaySelect">Pick a replay: </label>
+  <select id="replaySelect" bind:value={picked}>
+    <option value={null} selected></option>
+    {#each replays as replay}
+      <option value={replay.date}>{formatReplay(replay)}</option>
+    {/each}
+  </select>
+</div>
