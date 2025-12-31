@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onDestroy, onMount } from "svelte";
-  import { clear, drawMapFrame, drawReplayFrame, register } from "./canvas";
+  import { clear, drawReplayFrame, register } from "./canvas";
   import { Replay } from "./replay";
   import { playbackState } from "../playbackState.svelte";
 
@@ -10,7 +10,6 @@
 
   function draw(time: number) {
     clear();
-    drawMapFrame(time, 0, 300);
     drawReplayFrame(replay, time, 0, 300);
   }
 

@@ -16,7 +16,7 @@ let canvas: HTMLCanvasElement | null = null;
 let ctx: CanvasRenderingContext2D | null = null;
 
 function receptorX(h: number) {
-  return h / 2;
+  return h;
 }
 
 // t is current frame time, h is lane height
@@ -41,14 +41,16 @@ export function clear() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
 
-function drawBeat(x: number, y: number, r: number, kind: string) {
+function drawBeat(x: number, y: number, r: number, kind: string, dim: boolean) {
   if (!ctx) return;
   ctx.beginPath();
   ctx.arc(x, y, r, 0, 2 * Math.PI);
   ctx.fillStyle = kind === "d" ? "#990000" : "#000099";
+  if (dim) ctx.fillStyle += "33";
   ctx.fill();
   ctx.lineWidth = 4.0;
   ctx.strokeStyle = "#ffffff";
+  if (dim) ctx.strokeStyle += "33";
   ctx.stroke();
 }
 
@@ -65,28 +67,6 @@ function* visibleNotes(t: number, w: number, h: number) {
   );
   for (let i = endIndex; i >= startIndex; i--) {
     yield i;
-  }
-}
-
-// t: time in ms, y: y offset, h: height
-export function drawMapFrame(t: number, y: number, h: number) {
-  if (!ctx || !canvas) throw new Error("canvas has not loaded");
-  // go back to front because we want to draw earlier notes on top
-  const noteRadius = h / 5;
-  for (const i of visibleNotes(t, canvas.width, h)) {
-    if (map.data.charAt(i) === " ") continue;
-    const beat = i / 4;
-    const x = msToPos(t, h, beatToMs(beat));
-    if (i % 16 === 0) {
-      // bar line
-      ctx.beginPath();
-      ctx.moveTo(x, y);
-      ctx.lineTo(x, y + h);
-      ctx.lineWidth = 1.0;
-      ctx.strokeStyle = "#ffffff";
-      ctx.stroke();
-    }
-    drawBeat(x, y + h / 2, noteRadius, map.data.charAt(i));
   }
 }
 
@@ -120,7 +100,9 @@ function scoreColor(score: ReplayScore) {
   }
 }
 
-const impactWidth = 1 / 25; // lane heights
+const noteRadius = 0.2; // in lane heights
+const receptorRadius = 0.25;
+const impactWidth = 1 / 25;
 const scoreHeight = 1 / 12;
 export function drawReplayFrame(
   replay: Replay,
@@ -129,6 +111,34 @@ export function drawReplayFrame(
   h: number,
 ) {
   if (!ctx || !canvas) throw new Error("canvas has not loaded");
+
+  // draw receptor
+  ctx.beginPath();
+  ctx.arc(receptorX(h), h / 2, receptorRadius * h, 0, 2 * Math.PI);
+  ctx.fillStyle = "#777777";
+  ctx.fill();
+
+  // go back to front because we want to draw earlier notes on top
+  for (const i of visibleNotes(t, canvas.width, h)) {
+    if (map.data.charAt(i) === " ") continue;
+    const beat = i / 4;
+    const x = msToPos(t, h, beatToMs(beat));
+    if (i % 16 === 0) {
+      // bar line
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x, y + h);
+      ctx.lineWidth = 1.0;
+      ctx.strokeStyle = "#ffffff";
+      ctx.stroke();
+    }
+
+    // dim if note was hit and past receptor
+    const score = replay.scoreAt(i);
+    const dim = score !== ReplayScore.Miss && beatToMs(beat) < t;
+    drawBeat(x, y + h / 2, noteRadius * h, map.data.charAt(i), dim);
+  }
+
   const leftMs = posToMs(t, h, 0);
   const rightMs = posToMs(t, h, canvas.width);
   const events = replay.eventsIntersecting(
