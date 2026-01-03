@@ -8,7 +8,7 @@
   let element: HTMLAudioElement;
 
   // purely based off vibes
-  const hitsoundOffset = 12; // +10 = 10 ms later
+  const hitsoundOffset = 50; // +10 = 10 ms later
   const audioCtx = new AudioContext();
 
   let masterGain = audioCtx.createGain();
@@ -47,29 +47,33 @@
   }
 
   // schedules hitsounds for the next [lookahead] ms starting from [t]
-  let scheduled: { id: number; time: number; source: AudioBufferSourceNode }[] =
-    [];
+  let scheduled: {
+    index: number;
+    time: number;
+    source: AudioBufferSourceNode;
+  }[] = [];
   const lookahead = 100;
   const interval = 25;
   let intervalHandler: number | null = null;
   function scheduleHitsounds(replay: Replay) {
     const t = playbackState.computeTime();
-    let events = replay.eventsIntersecting(t, t + lookahead);
-    // discard events that are hit too early
-    events = events.filter((event) => event.pressTime >= t);
+    let eventIndices = replay.eventsIntersecting(t, t + lookahead);
     // discard already scheduled events
-    events = events.filter(
-      (event) => !scheduled.some((sched) => sched.id === event.id),
+    eventIndices = eventIndices.filter(
+      (index) =>
+        !scheduled.some((sched) => sched.index === index) &&
+        replay.events[index].pressTime >= t,
     );
-    for (const event of events) {
+    for (const index of eventIndices) {
+      const event = replay.events[index];
       const time =
         audioCtx.currentTime + (event.pressTime - t + hitsoundOffset) / 1000;
       const which = event.key.toLowerCase() === "d" ? "don" : "kat";
       const source = playHitsound(which, time);
       source.addEventListener("ended", () => {
-        scheduled = scheduled.filter((sched) => sched.id !== event.id);
+        scheduled = scheduled.filter((sched) => sched.index !== index);
       });
-      scheduled.push({ id: event.id, time, source });
+      scheduled.push({ index: index, time, source });
     }
   }
 
