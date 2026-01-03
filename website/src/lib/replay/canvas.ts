@@ -1,16 +1,8 @@
 import map from "../../assets/map.json";
-import { Replay, ReplayKey, ReplayScore } from "./replay";
+import { beatToMs, msToBeat, Replay, ReplayKey, ReplayScore } from "./replay";
 
 // how many lane-heights should a beat be wide
 const beatWidth = 1.4;
-
-function beatToMs(beat: number) {
-  return beat * map.ms_per_beat + map.start_offset;
-}
-
-export function msToBeat(ms: number) {
-  return (ms - map.start_offset) / map.ms_per_beat;
-}
 
 let canvas: HTMLCanvasElement | null = null;
 let ctx: CanvasRenderingContext2D | null = null;
@@ -140,18 +132,67 @@ export function drawReplayFrame(
     drawBeat(x, y + h / 2, noteRadius * h, map.data.charAt(i), dim);
   }
 
+  // draw keypress lines
   const leftMs = posToMs(t, h, 0);
   const rightMs = posToMs(t, h, canvas.width);
-  const events = replay.eventsIntersecting(
+  const eventIndices = replay.eventsIntersecting(
     leftMs - leeway * map.ms_per_beat,
     rightMs + leeway * map.ms_per_beat,
   );
-  for (const event of events) {
+  for (const i of eventIndices) {
+    const event = replay.events[i];
     const eventX = msToPos(t, h, event.pressTime) - (impactWidth * h) / 2;
     const eventW = impactWidth * h;
     const [eventY, eventH, color] = keyToData(event.key, y, h);
     ctx.fillStyle = color;
     ctx.fillRect(eventX, eventY, eventW, eventH);
+  }
+
+  // draw offset indicators
+  ctx.lineWidth = 2;
+  ctx.textBaseline = "middle";
+  for (const i of eventIndices) {
+    const event = replay.events[i];
+    if (event.note === null) continue;
+    const eventX = msToPos(t, h, event.pressTime) - (impactWidth * h) / 2;
+    const eventW = impactWidth * h;
+    const [eventY, eventH, _] = keyToData(event.key, y, h);
+    const score = replay.scoreAt(event.note);
+    if (score === null)
+      throw new Error(
+        `event #${i} corresponding note ${event.note} has null score`,
+      );
+    const noteX = msToPos(t, h, beatToMs(event.note / 4));
+
+    // ---|
+    ctx.beginPath();
+    ctx.moveTo(eventX + eventW / 2, eventY + eventH / 2 - eventH / 8);
+    ctx.lineTo(eventX + eventW / 2, eventY + eventH / 2 + eventH / 8);
+    ctx.moveTo(eventX + eventW / 2, eventY + eventH / 2);
+    ctx.lineTo(noteX, eventY + eventH / 2);
+    ctx.strokeStyle = scoreColor(score);
+    ctx.stroke();
+
+    // offset number
+    const offset = replay.offsets[event.note];
+    if (offset === null)
+      throw new Error(
+        `event #${i} corresponding note ${event.note} has null offset`,
+      );
+    let textPos: number;
+    if (offset < 0) {
+      // draw to left of press
+      ctx.textAlign = "right";
+      textPos = eventX - eventH / 12;
+    } else {
+      ctx.textAlign = "left";
+      textPos = eventX + eventW + eventH / 12;
+    }
+    const fontSize = Math.floor(eventH / 3);
+    ctx.font = `${fontSize}px sans-serif`;
+    const text = offset > 0 ? "+" + offset.toFixed(0) : offset.toFixed(0);
+    ctx.fillStyle = scoreColor(score);
+    ctx.fillText(text, textPos, eventY + eventH / 2);
   }
 
   // draw scoring indicators

@@ -1,7 +1,6 @@
 <script lang="ts">
   import { playbackState } from "../playbackState.svelte";
-  import { msToBeat } from "./canvas";
-  import { ReplayScore, type Replay } from "./replay";
+  import { msToBeat, ReplayScore, type Replay } from "./replay";
 
   const { replay }: { replay: Replay } = $props();
 

@@ -1,6 +1,7 @@
 import json
+import math
 import os
-from datetime import timedelta
+from datetime import datetime, timedelta
 from typing import cast
 
 import numpy as np
@@ -142,12 +143,23 @@ def parse_replay(path):
     }
 
 
-def hit_windows(od):
-    return {
+# after this date, lazer hit windows were changed
+CUTOFF_DATE = datetime.fromisoformat("2025-07-02 00:00:00.000000+00:00")
+
+# TODO: unfortunately the hit object timings do not always line up with math.floor of the tempo
+# so we should compute the differences
+
+
+def hit_windows(od, date):
+    windows = {
         "great": 50 - 3 * od,
         "ok": 120 - 8 * od if od <= 5 else 110 - 6 * od,
         "miss": 135 - 8 * od if od <= 5 else 120 - 5 * od,
     }
+    if date >= CUTOFF_DATE:
+        for type in ["great", "ok", "miss"]:
+            windows[type] = math.floor(windows[type]) - 0.5
+    return windows
 
 
 def key_is_good(obj, key):
@@ -155,16 +167,20 @@ def key_is_good(obj, key):
 
 
 def score_replay(map, replay):
-    windows = hit_windows(map["od"])
+    windows = hit_windows(map["od"], replay["date"])
     beat_index = 0
     press_index = 0
     press_time = 0
     output = []
+    beat_to_press_map = []
     while beat_index < len(map["data"]) and map["data"][beat_index] == " ":
         output.append(" ")
+        beat_to_press_map.append(-1)
         beat_index += 1
     while beat_index < len(map["data"]):
-        cur_beat_time = map["start_offset"] + (beat_index / 4) * map["ms_per_beat"]
+        cur_beat_time = math.floor(
+            map["start_offset"] + (beat_index / 4) * map["ms_per_beat"]
+        )
         cur_press_time = (
             press_time + replay["press_time_deltas"][press_index]
             if press_index < len(replay["keys"])
@@ -172,7 +188,7 @@ def score_replay(map, replay):
         )
         next_beat = True
         next_press = True
-        err = round(cur_press_time - cur_beat_time)
+        err = cur_press_time - cur_beat_time
         if abs(err) < windows["great"]:
             output.append("3")
         elif abs(err) < windows["ok"]:
@@ -191,13 +207,19 @@ def score_replay(map, replay):
             ):
                 output[-1] = "x"
             beat_index += 1
+            if next_press:
+                beat_to_press_map.append(press_index)
+            else:
+                beat_to_press_map.append(-1)
             while beat_index < len(map["data"]) and map["data"][beat_index] == " ":
                 output.append(" ")
+                beat_to_press_map.append(-1)
                 beat_index += 1
         if next_press and press_index < len(replay["keys"]):
             press_time += replay["press_time_deltas"][press_index]
             press_index += 1
-    return "".join(output)
+    assert len(beat_to_press_map) == len(map["data"])
+    return "".join(output), beat_to_press_map
 
 
 def parse_replays(map):
@@ -209,8 +231,9 @@ def parse_replays(map):
     print("Scoring replays")
     error_count = 0
     for replay in replays:
-        scores = score_replay(map, replay)
+        scores, beat_to_press_map = score_replay(map, replay)
         replay["scores"] = scores
+        replay["beat_to_press_map"] = beat_to_press_map
         # check judgements
         for j, c in [("300", "3"), ("100", "1"), ("miss", "x")]:
             calc = scores.count(c)

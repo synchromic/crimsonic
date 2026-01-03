@@ -1,4 +1,13 @@
 import IntervalTree from "@flatten-js/interval-tree";
+import map from "../../assets/map.json";
+
+export function beatToMs(beat: number) {
+  return Math.round(beat * map.ms_per_beat + map.start_offset);
+}
+
+export function msToBeat(ms: number) {
+  return (ms - map.start_offset) / map.ms_per_beat;
+}
 
 export interface JSONReplay {
   date: string;
@@ -12,6 +21,7 @@ export interface JSONReplay {
   press_time_deltas: number[];
   release_time_deltas: number[];
   scores: string;
+  beat_to_press_map: number[];
 }
 
 export enum ReplayKey {
@@ -38,15 +48,10 @@ function fromDeltas(arr: number[]) {
 }
 
 export interface ReplayEvent {
-  id: number;
   key: ReplayKey;
   pressTime: number;
   releaseTime: number;
-}
-
-interface TreeValue {
-  id: number;
-  key: ReplayKey;
+  note: number | null; // which note was hit by this event, if any
 }
 
 class ScorePrefixSums {
@@ -80,36 +85,57 @@ class ScorePrefixSums {
   }
 }
 
+type EventIndex = number;
 export class Replay {
   date: Date;
   scores: string;
   scorePrefixSums: ScorePrefixSums;
-  private eventTree: IntervalTree<TreeValue>;
+  events: ReplayEvent[];
+  private eventTree: IntervalTree<EventIndex>;
+  noteToEventMap: (EventIndex | null)[];
+  offsets: (number | null)[];
 
   constructor(json: JSONReplay) {
     this.date = new Date(json.date);
     this.scores = json.scores;
     this.eventTree = new IntervalTree();
+    this.events = [];
+    this.noteToEventMap = json.beat_to_press_map.map((i) =>
+      i === -1 ? null : i,
+    );
     const pressTimes = fromDeltas(json.press_time_deltas);
     const releaseTimes = fromDeltas(json.release_time_deltas);
     for (let i = 0; i < json.keys.length; i++) {
-      this.eventTree.insert([pressTimes[i], releaseTimes[i]], {
-        id: i,
+      const event: ReplayEvent = {
         key: json.keys.charAt(i) as ReplayKey,
-      });
+        pressTime: pressTimes[i],
+        releaseTime: releaseTimes[i],
+        note: null, // fill in later
+      };
+      this.events.push(event);
+      this.eventTree.insert([pressTimes[i], releaseTimes[i]], i);
+    }
+    for (let i = 0; i < this.noteToEventMap.length; i++) {
+      const eventIndex = this.noteToEventMap[i];
+      if (eventIndex !== null) {
+        this.events[eventIndex].note = i;
+      }
     }
     this.scorePrefixSums = new ScorePrefixSums(this.scores);
+    this.offsets = [];
+    for (let i = 0; i < this.noteToEventMap.length; i++) {
+      const eventIndex = this.noteToEventMap[i];
+      if (eventIndex === null) {
+        this.offsets.push(null);
+      } else {
+        const event = this.events[eventIndex];
+        this.offsets.push(event.pressTime - beatToMs(i / 4));
+      }
+    }
   }
 
-  eventsIntersecting(start: number, end: number): ReplayEvent[] {
-    return this.eventTree.search([start, end], (treeValue, interval) => {
-      return {
-        id: treeValue.id,
-        key: treeValue.key,
-        pressTime: interval.low as number,
-        releaseTime: interval.high as number,
-      };
-    });
+  eventsIntersecting(start: number, end: number): EventIndex[] {
+    return this.eventTree.search([start, end]);
   }
 
   scoreAt(index: number): ReplayScore | null {
