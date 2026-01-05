@@ -16,14 +16,14 @@
   }
 
   function formatReplay(replay: JSONReplay) {
-    const date = formatDate(new Date(replay.date));
+    const date = formatDate(new Date(replay.timestamp));
     const accuracy = (replay.accuracy * 100).toFixed(2);
     const misses = replay.judgements.miss;
     return `${date} (${accuracy}%, ${misses} misses)`;
   }
 
   $effect(() => {
-    const jsonReplay = replays.find((replay) => replay.date === picked);
+    const jsonReplay = replays.find((replay) => replay.timestamp === picked);
     pickedReplay.replay = jsonReplay ? new Replay(jsonReplay) : null;
   });
 </script>
@@ -33,7 +33,7 @@
   <select id="replaySelect" bind:value={picked}>
     <option value={null} selected></option>
     {#each replays as replay}
-      <option value={replay.date}>{formatReplay(replay)}</option>
+      <option value={replay.timestamp}>{formatReplay(replay)}</option>
     {/each}
   </select>
 </div>

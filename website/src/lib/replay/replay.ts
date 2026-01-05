@@ -1,16 +1,16 @@
 import IntervalTree from "@flatten-js/interval-tree";
 import map from "../../assets/map.json";
 
-export function beatToMs(beat: number) {
-  return Math.round(beat * map.ms_per_beat + map.start_offset);
+export function noteToMs(noteIndex: number) {
+  return Math.round(noteIndex * map.ms_per_note + map.start_offset);
 }
 
-export function msToBeat(ms: number) {
-  return (ms - map.start_offset) / map.ms_per_beat;
+export function msToNote(ms: number) {
+  return (ms - map.start_offset) / map.ms_per_note;
 }
 
 export interface JSONReplay {
-  date: string;
+  timestamp: string;
   accuracy: number;
   judgements: {
     "300": number;
@@ -21,7 +21,7 @@ export interface JSONReplay {
   press_time_deltas: number[];
   release_time_deltas: number[];
   scores: string;
-  beat_to_press_map: number[];
+  note_to_press_map: number[];
 }
 
 export enum ReplayKey {
@@ -96,11 +96,11 @@ export class Replay {
   offsets: (number | null)[];
 
   constructor(json: JSONReplay) {
-    this.date = new Date(json.date);
+    this.date = new Date(json.timestamp);
     this.scores = json.scores;
     this.eventTree = new IntervalTree();
     this.events = [];
-    this.noteToEventMap = json.beat_to_press_map.map((i) =>
+    this.noteToEventMap = json.note_to_press_map.map((i) =>
       i === -1 ? null : i,
     );
     const pressTimes = fromDeltas(json.press_time_deltas);
@@ -129,7 +129,7 @@ export class Replay {
         this.offsets.push(null);
       } else {
         const event = this.events[eventIndex];
-        this.offsets.push(event.pressTime - beatToMs(i / 4));
+        this.offsets.push(event.pressTime - noteToMs(i));
       }
     }
   }

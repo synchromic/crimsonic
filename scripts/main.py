@@ -13,7 +13,7 @@ from slider import Beatmap
 ONE_MS = timedelta(milliseconds=1)
 
 
-def get_sixteenth(timing_point, time) -> int:
+def get_note_index(timing_point, time) -> int:
     return round((time - timing_point.offset) / ONE_MS / timing_point.ms_per_beat * 4)
 
 
@@ -27,31 +27,31 @@ def parse_map():
     # Assuming that the map has only one timing point
     timing_point = map.timing_points[0]
 
-    objects: tuple[slider.Circle, ...] = map.hit_objects(
+    notes: tuple[slider.Circle, ...] = map.hit_objects(
         circles=True, sliders=False, spinners=False
     )
-    beat_to_object: dict[int, slider.Circle] = {}
-    for object in objects:
-        beat = get_sixteenth(timing_point, object.time)
-        if beat in beat_to_object:
-            raise ValueError(f"Duplicate time detected: {object.time} (beat {beat})")
-        beat_to_object[beat] = object
+    beat_to_note: dict[int, slider.Circle] = {}
+    for note in notes:
+        beat = get_note_index(timing_point, note.time)
+        if beat in beat_to_note:
+            raise ValueError(f"Duplicate time detected: {note.time} (beat {beat})")
+        beat_to_note[beat] = note
 
     # convert to string of d,k,<space>
-    last_object = max(beat_to_object.keys())
-    object_chars = []
-    for i in range(last_object + 1):
-        if i in beat_to_object:
-            object_chars.append("k" if is_kat(beat_to_object[i]) else "d")
+    last_note_index = max(beat_to_note.keys())
+    note_chars = []
+    for i in range(last_note_index + 1):
+        if i in beat_to_note:
+            note_chars.append("k" if is_kat(beat_to_note[i]) else "d")
         else:
-            object_chars.append(" ")
-    objects_str = "".join(object_chars)
+            note_chars.append(" ")
+    notes_str = "".join(note_chars)
 
     json_output = {
         "start_offset": int(timing_point.offset / ONE_MS),
-        "ms_per_beat": timing_point.ms_per_beat,
+        "ms_per_note": timing_point.ms_per_beat / 4,
         "od": map.overall_difficulty,
-        "data": objects_str,
+        "notes": notes_str,
     }
     path = "../website/src/assets/map.json"
     with open(path, "w") as output_file:
@@ -87,33 +87,33 @@ def parse_replay(path):
     }
 
     events = []
-    cur_presses: dict[KeyTaiko, int | None] = {key: None for key in KeyTaiko}
+    pressed_keys: dict[KeyTaiko, int | None] = {key: None for key in KeyTaiko}
     data = cast(list[osrparse.ReplayEventTaiko], replay.replay_data)
     time = 0
     for ev in data:
         time += ev.time_delta
         for key in KeyTaiko:
             pressed = (ev.keys & key) > 0
-            if pressed and cur_presses[key] is None:
-                cur_presses[key] = time
-            elif not pressed and cur_presses[key] is not None:
+            if pressed and pressed_keys[key] is None:
+                pressed_keys[key] = time
+            elif not pressed and pressed_keys[key] is not None:
                 events.append(
                     {
                         "key": key,
-                        "press_time": cur_presses[key],
+                        "press_time": pressed_keys[key],
                         "release_time": time,
                     }
                 )
-                cur_presses[key] = None
+                pressed_keys[key] = None
 
     # idk if there can be unreleased keys but just in case
     time += 1000
     for key in KeyTaiko:
-        if cur_presses[key] is not None:
+        if pressed_keys[key] is not None:
             events.append(
                 {
                     "key": key,
-                    "press_time": cur_presses[key],
+                    "press_time": pressed_keys[key],
                     "release_time": time,
                 }
             )
@@ -134,7 +134,7 @@ def parse_replay(path):
     accuracy = (judgements["300"] + judgements["100"] / 3) / total_notes
 
     return {
-        "date": replay.timestamp,
+        "timestamp": replay.timestamp,
         "accuracy": accuracy,
         "judgements": judgements,
         "keys": "".join(keys),
@@ -146,17 +146,14 @@ def parse_replay(path):
 # after this date, lazer hit windows were changed
 CUTOFF_DATE = datetime.fromisoformat("2025-07-02 00:00:00.000000+00:00")
 
-# TODO: unfortunately the hit object timings do not always line up with math.floor of the tempo
-# so we should compute the differences
 
-
-def hit_windows(od, date):
+def hit_windows(od, timestamp):
     windows = {
         "great": 50 - 3 * od,
         "ok": 120 - 8 * od if od <= 5 else 110 - 6 * od,
         "miss": 135 - 8 * od if od <= 5 else 120 - 5 * od,
     }
-    if date >= CUTOFF_DATE:
+    if timestamp >= CUTOFF_DATE:
         for type in ["great", "ok", "miss"]:
             windows[type] = math.floor(windows[type]) - 0.5
     return windows
@@ -167,28 +164,28 @@ def key_is_good(obj, key):
 
 
 def score_replay(map, replay):
-    windows = hit_windows(map["od"], replay["date"])
-    beat_index = 0
-    press_index = 0
+    windows = hit_windows(map["od"], replay["timestamp"])
+    note_index = 0
+    event_index = 0
     press_time = 0
     output = []
-    beat_to_press_map = []
-    while beat_index < len(map["data"]) and map["data"][beat_index] == " ":
+    note_to_press_map = []
+    while note_index < len(map["notes"]) and map["notes"][note_index] == " ":
         output.append(" ")
-        beat_to_press_map.append(-1)
-        beat_index += 1
-    while beat_index < len(map["data"]):
-        cur_beat_time = math.floor(
-            map["start_offset"] + (beat_index / 4) * map["ms_per_beat"]
+        note_to_press_map.append(-1)
+        note_index += 1
+    while note_index < len(map["notes"]):
+        cur_note_time = math.floor(
+            map["start_offset"] + note_index * map["ms_per_note"]
         )
         cur_press_time = (
-            press_time + replay["press_time_deltas"][press_index]
-            if press_index < len(replay["keys"])
+            press_time + replay["press_time_deltas"][event_index]
+            if event_index < len(replay["keys"])
             else 1e10
         )
-        next_beat = True
+        next_note = True
         next_press = True
-        err = cur_press_time - cur_beat_time
+        err = cur_press_time - cur_note_time
         if abs(err) < windows["great"]:
             output.append("3")
         elif abs(err) < windows["ok"]:
@@ -196,52 +193,52 @@ def score_replay(map, replay):
         elif err < 0 and abs(err) < windows["miss"]:
             output.append("x")
         elif err < 0:
-            next_beat = False  # press was way too early, beat isn't judged
+            next_note = False  # press was way too early, note isn't judged
         else:
-            # press was late, beat missed
+            # press was late, note missed
             output.append("x")
             next_press = False
-        if next_beat:
-            if press_index >= len(replay["keys"]) or not key_is_good(
-                map["data"][beat_index], replay["keys"][press_index]
+        if next_note:
+            if event_index >= len(replay["keys"]) or not key_is_good(
+                map["notes"][note_index], replay["keys"][event_index]
             ):
                 output[-1] = "x"
-            beat_index += 1
+            note_index += 1
             if next_press:
-                beat_to_press_map.append(press_index)
+                note_to_press_map.append(event_index)
             else:
-                beat_to_press_map.append(-1)
-            while beat_index < len(map["data"]) and map["data"][beat_index] == " ":
+                note_to_press_map.append(-1)
+            while note_index < len(map["notes"]) and map["notes"][note_index] == " ":
                 output.append(" ")
-                beat_to_press_map.append(-1)
-                beat_index += 1
-        if next_press and press_index < len(replay["keys"]):
-            press_time += replay["press_time_deltas"][press_index]
-            press_index += 1
-    assert len(beat_to_press_map) == len(map["data"])
-    return "".join(output), beat_to_press_map
+                note_to_press_map.append(-1)
+                note_index += 1
+        if next_press and event_index < len(replay["keys"]):
+            press_time += replay["press_time_deltas"][event_index]
+            event_index += 1
+    assert len(note_to_press_map) == len(map["notes"])
+    return "".join(output), note_to_press_map
 
 
 def parse_replays(map):
     replays = []
     for path in os.listdir("replays"):
         replays.append(parse_replay(path))
-    replays.sort(key=lambda r: r["date"])
+    replays.sort(key=lambda r: r["timestamp"])
 
     print("Scoring replays")
     error_count = 0
     for replay in replays:
-        scores, beat_to_press_map = score_replay(map, replay)
+        scores, note_to_press_map = score_replay(map, replay)
         replay["scores"] = scores
-        replay["beat_to_press_map"] = beat_to_press_map
+        replay["note_to_press_map"] = note_to_press_map
         # check judgements
         for j, c in [("300", "3"), ("100", "1"), ("miss", "x")]:
             calc = scores.count(c)
             should = replay["judgements"][j]
-            date = replay["date"]
+            timestamp = replay["timestamp"]
             if calc != should:
                 print(
-                    f"Mismatched {j} count in replay {date}: should be {should}, computed {calc}"
+                    f"Mismatched {j} count in replay {timestamp}: should be {should}, computed {calc}"
                 )
                 error_count += abs(calc - should)
     print(f"Total errors: {error_count}")
@@ -249,7 +246,7 @@ def parse_replays(map):
     json_output = [
         {
             **replay,
-            "date": str(replay["date"]),
+            "timestamp": str(replay["timestamp"]),
             "press_time_deltas": replay["press_time_deltas"].tolist(),
             "release_time_deltas": replay["release_time_deltas"].tolist(),
         }

@@ -2,7 +2,7 @@
   import map from "../assets/map.json";
   import { playbackState } from "./playbackState.svelte";
 
-  let mapLen = (map.data.length / 4) * map.ms_per_beat;
+  let mapLen = map.notes.length * map.ms_per_note;
 
   let value = $state(0);
 

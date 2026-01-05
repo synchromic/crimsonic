@@ -1,8 +1,8 @@
 import map from "../../assets/map.json";
-import { beatToMs, msToBeat, Replay, ReplayKey, ReplayScore } from "./replay";
+import { noteToMs, msToNote, Replay, ReplayKey, ReplayScore } from "./replay";
 
-// how many lane-heights should a beat be wide
-const beatWidth = 1.4;
+// how many lane-heights should be between note centers
+const noteWidth = 0.35;
 
 let canvas: HTMLCanvasElement | null = null;
 let ctx: CanvasRenderingContext2D | null = null;
@@ -13,13 +13,13 @@ function receptorX(h: number) {
 
 // t is current frame time, h is lane height
 function posToMs(t: number, h: number, x: number) {
-  const pixelsPerMs = (beatWidth / map.ms_per_beat) * h;
+  const pixelsPerMs = (noteWidth / map.ms_per_note) * h;
   return (x - receptorX(h)) / pixelsPerMs + t;
 }
 
 // t is current frame time, h is lane height, ms is time of object, returns x position of object
 function msToPos(t: number, h: number, ms: number) {
-  const pixelsPerMs = (beatWidth / map.ms_per_beat) * h;
+  const pixelsPerMs = (noteWidth / map.ms_per_note) * h;
   return (ms - t) * pixelsPerMs + receptorX(h);
 }
 
@@ -33,7 +33,7 @@ export function clear() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
 
-function drawBeat(x: number, y: number, r: number, kind: string, dim: boolean) {
+function drawNote(x: number, y: number, r: number, kind: string, dim: boolean) {
   if (!ctx) return;
   ctx.beginPath();
   ctx.arc(x, y, r, 0, 2 * Math.PI);
@@ -47,15 +47,14 @@ function drawBeat(x: number, y: number, r: number, kind: string, dim: boolean) {
 }
 
 // Yields each visible note on the canvas, plus some leeway, in reverse order
-// Note is a sixteenth note (1/4 beat); index into map data
-const leeway = 1.0; // beats
+const leeway = 4.0; // notes
 function* visibleNotes(t: number, w: number, h: number) {
-  const leftBeat = msToBeat(posToMs(t, h, 0));
-  const rightBeat = msToBeat(posToMs(t, h, w));
-  const startIndex = Math.max(0, Math.floor((leftBeat - leeway) * 4)); // *4 because four notes per beat
+  const leftNote = msToNote(posToMs(t, h, 0));
+  const rightNote = msToNote(posToMs(t, h, w));
+  const startIndex = Math.max(0, Math.floor(leftNote - leeway));
   const endIndex = Math.min(
-    map.data.length - 1,
-    Math.floor((rightBeat + leeway) * 4),
+    map.notes.length - 1,
+    Math.floor(rightNote + leeway),
   );
   for (let i = endIndex; i >= startIndex; i--) {
     yield i;
@@ -113,8 +112,7 @@ export function drawReplayFrame(
 
   // go back to front because we want to draw earlier notes on top
   for (const i of visibleNotes(t, canvas.width, h)) {
-    const beat = i / 4;
-    const x = msToPos(t, h, beatToMs(beat));
+    const x = msToPos(t, h, noteToMs(i));
     if (Math.abs(i) % 16 === 0) {
       // bar line
       ctx.beginPath();
@@ -125,19 +123,19 @@ export function drawReplayFrame(
       ctx.stroke();
     }
 
-    if (map.data.charAt(i) === " ") continue;
+    if (map.notes.charAt(i) === " ") continue;
     // dim if note was hit and past receptor
     const score = replay.scoreAt(i);
-    const dim = score !== ReplayScore.Miss && beatToMs(beat) < t;
-    drawBeat(x, y + h / 2, noteRadius * h, map.data.charAt(i), dim);
+    const dim = score !== ReplayScore.Miss && noteToMs(i) < t;
+    drawNote(x, y + h / 2, noteRadius * h, map.notes.charAt(i), dim);
   }
 
   // draw keypress lines
   const leftMs = posToMs(t, h, 0);
   const rightMs = posToMs(t, h, canvas.width);
   const eventIndices = replay.eventsIntersecting(
-    leftMs - leeway * map.ms_per_beat,
-    rightMs + leeway * map.ms_per_beat,
+    leftMs - leeway * map.ms_per_note,
+    rightMs + leeway * map.ms_per_note,
   );
   for (const i of eventIndices) {
     const event = replay.events[i];
@@ -162,7 +160,7 @@ export function drawReplayFrame(
       throw new Error(
         `event #${i} corresponding note ${event.note} has null score`,
       );
-    const noteX = msToPos(t, h, beatToMs(event.note / 4));
+    const noteX = msToPos(t, h, noteToMs(event.note));
 
     // ---|
     ctx.beginPath();
@@ -199,9 +197,8 @@ export function drawReplayFrame(
   for (const i of visibleNotes(t, canvas.width, h)) {
     const score = replay.scoreAt(i);
     if (score === null) continue;
-    const beat = i / 4;
-    const width = Math.min((beatWidth / 4) * h, 2 * noteRadius * h);
-    const x = msToPos(t, h, beatToMs(beat)) - width / 2;
+    const width = Math.min(noteWidth * h, 2 * noteRadius * h);
+    const x = msToPos(t, h, noteToMs(i)) - width / 2;
     ctx.fillStyle = scoreColor(score);
     ctx.fillRect(x, y, width, y + scoreHeight * h);
   }

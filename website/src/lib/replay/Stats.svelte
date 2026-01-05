@@ -1,10 +1,10 @@
 <script lang="ts">
   import { playbackState } from "../playbackState.svelte";
-  import { msToBeat, ReplayScore, type Replay } from "./replay";
+  import { msToNote, ReplayScore, type Replay } from "./replay";
 
   const { replay }: { replay: Replay } = $props();
 
-  let curIndex = $derived(Math.floor(msToBeat(playbackState.time) * 4));
+  let curIndex = $derived(Math.floor(msToNote(playbackState.time)));
   let greats = $derived(
     replay.scorePrefixSums.query(ReplayScore.Great, curIndex),
   );
