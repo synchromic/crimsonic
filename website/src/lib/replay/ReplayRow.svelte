@@ -26,11 +26,10 @@
 
 <style>
   div {
-    width: 100%;
-    height: 100%;
     min-height: 200px;
     border: 1px solid;
     padding: 5px;
+    margin-top: 5px;
     box-sizing: border-box;
   }
 </style>

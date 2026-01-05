@@ -37,7 +37,6 @@ let replayRows: IReplayRow[] = $state([]);
 
 export function addReplayRow(row: IReplayRow) {
   replayRows.push(row);
-  console.log("added", row);
 }
 
 export function register(elem: HTMLCanvasElement) {

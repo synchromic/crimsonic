@@ -5,6 +5,7 @@
   import { playbackState } from "../playbackState.svelte";
 
   let canvas: HTMLCanvasElement;
+  let { scrollTop }: { scrollTop: number | undefined } = $props();
 
   onMount(() => {
     register(canvas);
@@ -12,6 +13,8 @@
   });
 
   $effect(() => {
+    scrollTop;
+    console.log("drawing");
     draw(playbackState.time);
   });
 
