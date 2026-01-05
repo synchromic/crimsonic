@@ -1,17 +1,10 @@
 <script lang="ts">
   import { onDestroy, onMount } from "svelte";
-  import { clear, drawReplayFrame, register } from "./canvas";
+  import { draw, register } from "./canvas.svelte";
   import { Replay } from "./replay";
   import { playbackState } from "../playbackState.svelte";
 
-  let { replay }: { replay: Replay } = $props();
-
   let canvas: HTMLCanvasElement;
-
-  function draw(time: number) {
-    clear();
-    drawReplayFrame(replay, time, 0, 300);
-  }
 
   onMount(() => {
     register(canvas);

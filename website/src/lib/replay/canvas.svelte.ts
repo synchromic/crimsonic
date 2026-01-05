@@ -26,9 +26,34 @@ function msToPos(t: number, h: number, ms: number) {
   return (ms - t) * pixelsPerMs + receptorX(h);
 }
 
+export interface IReplayRow {
+  replay: Replay;
+  getY: () => number;
+  getH: () => number;
+  // TODO: isVisible
+}
+
+let replayRows: IReplayRow[] = $state([]);
+
+export function addReplayRow(row: IReplayRow) {
+  replayRows.push(row);
+  console.log("added", row);
+}
+
 export function register(elem: HTMLCanvasElement) {
   canvas = elem;
   ctx = elem.getContext("2d");
+}
+
+export function draw(time: number) {
+  if (!ctx || !canvas) throw new Error("canvas has not loaded");
+  clear();
+  const canvasY = canvas.getBoundingClientRect().top;
+  for (const replayRow of replayRows) {
+    const y = replayRow.getY() - canvasY;
+    const h = replayRow.getH();
+    drawReplayFrame(replayRow.replay, time, y, h);
+  }
 }
 
 export function clear() {
@@ -133,7 +158,7 @@ export function drawReplayFrame(
 
   // draw receptor
   ctx.beginPath();
-  ctx.arc(receptorX(h), h / 2, receptorRadius * h, 0, 2 * Math.PI);
+  ctx.arc(receptorX(h), y + h / 2, receptorRadius * h, 0, 2 * Math.PI);
   ctx.strokeStyle = "#777777";
   ctx.lineWidth = 4.0;
   ctx.stroke();
@@ -145,7 +170,7 @@ export function drawReplayFrame(
     const width = Math.min(noteWidth * h, 2 * noteRadius * h);
     const x = msToPos(t, h, noteToMs(i)) - width / 2;
     ctx.fillStyle = scoreColor(score);
-    ctx.fillRect(x, y, width, y + scoreHeight * h);
+    ctx.fillRect(x, y, width, scoreHeight * h);
   }
 
   // go back to front because we want to draw earlier notes on top
@@ -263,5 +288,15 @@ export function drawReplayFrame(
     const text = offset > 0 ? "+" + offset.toFixed(0) : offset.toFixed(0);
     ctx.fillStyle = scoreColor(score);
     ctx.fillText(text, textPos, eventY + eventH / 2);
+  }
+
+  // draw scoring indicators
+  for (const i of visibleNotes(t, canvas.width, h)) {
+    const score = replay.scoreAt(i);
+    if (score === null) continue;
+    const width = Math.min(noteWidth * h, 2 * noteRadius * h);
+    const x = msToPos(t, h, noteToMs(i)) - width / 2;
+    ctx.fillStyle = scoreColor(score);
+    ctx.fillRect(x, y, width, scoreHeight * h);
   }
 }
