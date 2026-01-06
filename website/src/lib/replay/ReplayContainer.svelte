@@ -47,10 +47,11 @@
 
 <style>
   #outer {
+    flex-grow: 1;
+    margin-bottom: 10px;
     display: flex;
     flex-direction: row;
     max-width: 100%;
-    max-height: 60vh;
     overflow-y: scroll;
     border: 1px solid;
     padding: 5px;

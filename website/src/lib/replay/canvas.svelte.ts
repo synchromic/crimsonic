@@ -267,27 +267,6 @@ export function drawReplayFrame(
     ctx.lineTo(noteX, eventY + eventH / 2);
     ctx.strokeStyle = scoreColor(score);
     ctx.stroke();
-
-    // offset number
-    const offset = replay.offsets[event.note];
-    if (offset === null)
-      throw new Error(
-        `event #${i} corresponding note ${event.note} has null offset`,
-      );
-    let textPos: number;
-    if (offset < 0) {
-      // draw to left of press
-      ctx.textAlign = "right";
-      textPos = eventX - eventH / 12;
-    } else {
-      ctx.textAlign = "left";
-      textPos = eventX + eventW + eventH / 12;
-    }
-    const fontSize = Math.floor(eventH / 3);
-    ctx.font = `${fontSize}px sans-serif`;
-    const text = offset > 0 ? "+" + offset.toFixed(0) : offset.toFixed(0);
-    ctx.fillStyle = scoreColor(score);
-    ctx.fillText(text, textPos, eventY + eventH / 2);
   }
 
   // draw scoring indicators

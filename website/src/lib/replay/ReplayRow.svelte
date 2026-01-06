@@ -47,7 +47,7 @@
 
 <style>
   #outer {
-    min-height: 200px;
+    /* min-height: 200px; */
     border: 1px solid;
     padding: 5px;
     margin-top: 5px;
