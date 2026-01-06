@@ -30,7 +30,7 @@ export interface IReplayRow {
   replay: Replay;
   getY: () => number;
   getH: () => number;
-  // TODO: isVisible
+  isVisible: () => boolean;
 }
 
 let replayRows: IReplayRow[] = $state([]);
@@ -49,6 +49,7 @@ export function draw(time: number) {
   clear();
   const canvasY = canvas.getBoundingClientRect().top;
   for (const replayRow of replayRows) {
+    if (!replayRow.isVisible()) continue;
     const y = replayRow.getY() - canvasY;
     const h = replayRow.getH();
     drawReplayFrame(replayRow.replay, time, y, h);

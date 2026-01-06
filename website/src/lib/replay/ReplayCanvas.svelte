@@ -14,7 +14,6 @@
 
   $effect(() => {
     scrollTop;
-    console.log("drawing");
     draw(playbackState.time);
   });
 

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import jsonReplays from "../../assets/replays.json";
   import { Replay } from "./replay";
   import ReplayCanvas from "./ReplayCanvas.svelte";
@@ -6,17 +7,39 @@
 
   let replays = jsonReplays.map((r) => new Replay(r));
   let elem: HTMLDivElement;
+  let rowsParent: HTMLDivElement;
   let scrollTop = $state(0);
+  let observer: IntersectionObserver;
+  let visibility = $state(jsonReplays.map((_) => false));
 
   function onscroll() {
     scrollTop = elem.scrollTop;
   }
+
+  function intersectionCallback(entries: IntersectionObserverEntry[]) {
+    for (const entry of entries) {
+      const target = entry.target as HTMLDivElement;
+      const index = parseInt(target.dataset.index!);
+      visibility[index] = entry.isIntersecting;
+    }
+  }
+
+  onMount(() => {
+    observer = new IntersectionObserver(intersectionCallback, {
+      root: elem,
+    });
+    for (const child of rowsParent.children) {
+      observer.observe(child);
+    }
+  });
 </script>
 
 <div id="outer" bind:this={elem} {onscroll}>
-  <div id="rows">
-    {#each replays as replay}
-      <ReplayRow {replay} />
+  <div id="rows" bind:this={rowsParent}>
+    {#each replays as replay, index}
+      <div data-index={index}>
+        <ReplayRow {replay} visible={visibility[index]} />
+      </div>
     {/each}
   </div>
   <div id="canvas"><ReplayCanvas {scrollTop} /></div>

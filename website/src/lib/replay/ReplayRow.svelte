@@ -4,7 +4,7 @@
   import { addReplayRow } from "./canvas.svelte";
   import Stats from "./Stats.svelte";
 
-  let { replay }: { replay: Replay } = $props();
+  let { replay, visible }: { replay: Replay; visible: boolean } = $props();
   let container: HTMLDivElement;
 
   onMount(() => {
@@ -15,6 +15,9 @@
       },
       getY() {
         return container.getBoundingClientRect().top;
+      },
+      isVisible() {
+        return visible;
       },
     });
   });
