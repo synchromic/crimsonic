@@ -1,8 +1,11 @@
 import map from "../../assets/map.json";
+import { options } from "../options.svelte";
 import { noteToMs, msToNote, Replay, ReplayKey, ReplayScore } from "./replay";
 
 // how many lane-heights should be between note centers
 const noteWidth = 0.35;
+
+const missWindow = 84.5; // ms
 
 let canvas: HTMLCanvasElement | null = null;
 let ctx: CanvasRenderingContext2D | null = null;
@@ -43,6 +46,31 @@ function drawNote(x: number, y: number, r: number, kind: string, dim: boolean) {
   ctx.lineWidth = 4.0;
   ctx.strokeStyle = "#ffffff";
   if (dim) ctx.strokeStyle += "33";
+  ctx.stroke();
+}
+
+function drawCross(x: number, y: number, noteRadius: number) {
+  if (!ctx) return;
+  const p1 = noteRadius / 3; // ~length
+  const p2 = noteRadius / 5; // ~thickness
+  ctx.beginPath();
+  ctx.moveTo(x - p1 - p2, y - p1);
+  ctx.lineTo(x - p1, y - p1 - p2);
+  ctx.lineTo(x, y - p2);
+  ctx.lineTo(x + p1, y - p1 - p2);
+  ctx.lineTo(x + p1 + p2, y - p1);
+  ctx.lineTo(x + p2, y);
+  ctx.lineTo(x + p1 + p2, y + p1);
+  ctx.lineTo(x + p1, y + p1 + p2);
+  ctx.lineTo(x, y + p2);
+  ctx.lineTo(x - p1, y + p1 + p2);
+  ctx.lineTo(x - p1 - p2, y + p1);
+  ctx.lineTo(x - p2, y);
+  ctx.closePath();
+  ctx.fillStyle = "#FF0000";
+  ctx.fill();
+  ctx.strokeStyle = "#000000";
+  ctx.lineWidth = p2 / 5;
   ctx.stroke();
 }
 
@@ -110,6 +138,16 @@ export function drawReplayFrame(
   ctx.lineWidth = 4.0;
   ctx.stroke();
 
+  // draw scoring indicators
+  for (const i of visibleNotes(t, canvas.width, h)) {
+    const score = replay.scoreAt(i);
+    if (score === null) continue;
+    const width = Math.min(noteWidth * h, 2 * noteRadius * h);
+    const x = msToPos(t, h, noteToMs(i)) - width / 2;
+    ctx.fillStyle = scoreColor(score);
+    ctx.fillRect(x, y, width, y + scoreHeight * h);
+  }
+
   // go back to front because we want to draw earlier notes on top
   for (const i of visibleNotes(t, canvas.width, h)) {
     const x = msToPos(t, h, noteToMs(i));
@@ -124,10 +162,44 @@ export function drawReplayFrame(
     }
 
     if (map.notes.charAt(i) === " ") continue;
-    // dim if note was hit and past receptor
+
     const score = replay.scoreAt(i);
-    const dim = score !== ReplayScore.Miss && noteToMs(i) < t;
-    drawNote(x, y + h / 2, noteRadius * h, map.notes.charAt(i), dim);
+    const eventIndex = replay.noteToEventMap[i];
+    let dim = false;
+    if (
+      score === ReplayScore.Miss &&
+      eventIndex !== null &&
+      replay.events[eventIndex].pressTime <= t
+    ) {
+      // note was incorrectly hit, draw X
+      drawNote(x, y + h / 2, noteRadius * h, map.notes.charAt(i), true);
+      drawCross(x, y + h / 2, noteRadius * h);
+    } else if (score !== ReplayScore.Miss) {
+      const event = replay.events[eventIndex!];
+      if (options.flyNotes) {
+        // bounce animation
+        const peakTime = 500; // ms
+        const timeSinceHit = t - event.pressTime;
+        const ratio = timeSinceHit / peakTime;
+        let offsetY = 0;
+        if (timeSinceHit > 0) {
+          offsetY = -1.5 * h * (1 - (1 - ratio) * (1 - ratio));
+        }
+        drawNote(
+          x,
+          y + h / 2 + offsetY,
+          noteRadius * h,
+          map.notes.charAt(i),
+          false,
+        );
+      } else {
+        let dim = t > event.pressTime;
+        drawNote(x, y + h / 2, noteRadius * h, map.notes.charAt(i), dim);
+      }
+    } else {
+      drawNote(x, y + h / 2, noteRadius * h, map.notes.charAt(i), false);
+      if (t > noteToMs(i) + missWindow) drawCross(x, y + h / 2, noteRadius * h);
+    }
   }
 
   // draw keypress lines
@@ -191,15 +263,5 @@ export function drawReplayFrame(
     const text = offset > 0 ? "+" + offset.toFixed(0) : offset.toFixed(0);
     ctx.fillStyle = scoreColor(score);
     ctx.fillText(text, textPos, eventY + eventH / 2);
-  }
-
-  // draw scoring indicators
-  for (const i of visibleNotes(t, canvas.width, h)) {
-    const score = replay.scoreAt(i);
-    if (score === null) continue;
-    const width = Math.min(noteWidth * h, 2 * noteRadius * h);
-    const x = msToPos(t, h, noteToMs(i)) - width / 2;
-    ctx.fillStyle = scoreColor(score);
-    ctx.fillRect(x, y, width, y + scoreHeight * h);
   }
 }
