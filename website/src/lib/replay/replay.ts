@@ -2,7 +2,7 @@ import IntervalTree from "@flatten-js/interval-tree";
 import map from "../../assets/map.json";
 
 export function noteToMs(noteIndex: number) {
-  return Math.round(noteIndex * map.ms_per_note + map.start_offset);
+  return Math.floor(noteIndex * map.ms_per_note + map.start_offset);
 }
 
 export function msToNote(ms: number) {

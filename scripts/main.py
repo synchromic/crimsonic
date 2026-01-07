@@ -74,6 +74,13 @@ def key_to_char(key):
             raise ValueError(f"Invalid key: {key}")
 
 
+# returns numpy array
+def deltas(a):
+    arr = np.array(a, dtype=np.int32)
+    arr[1:] = np.ediff1d(arr)
+    return arr
+
+
 def parse_replay(path):
     replay = Replay.from_path(f"replays/{path}")
     if replay.mode != osrparse.GameMode.TAIKO:
@@ -125,10 +132,8 @@ def parse_replay(path):
     # keys: list of lowercase 'd', 'k' for left don/kat; uppercase 'D', 'K' for right don/kat
     # we also convert times back into deltas (this almost halves the output size lol)
     keys = "".join(key_to_char(ev["key"]) for ev in events)
-    presses = np.array([ev["press_time"] for ev in events], dtype=np.int32)
-    presses[1:] = np.ediff1d(presses)
-    releases = np.array([ev["release_time"] for ev in events], dtype=np.int32)
-    releases[1:] = np.ediff1d(releases)
+    presses = deltas([ev["press_time"] for ev in events])
+    releases = deltas([ev["release_time"] for ev in events])
 
     total_notes = judgements["300"] + judgements["100"] + judgements["miss"]
     accuracy = (judgements["300"] + judgements["100"] / 3) / total_notes
@@ -216,7 +221,20 @@ def score_replay(map, replay):
             press_time += replay["press_time_deltas"][event_index]
             event_index += 1
     assert len(note_to_press_map) == len(map["notes"])
-    return "".join(output), note_to_press_map
+    scores = "".join(output)
+
+    # check judgements
+    error_count = 0
+    for j, c in [("300", "3"), ("100", "1"), ("miss", "x")]:
+        calc = scores.count(c)
+        should = replay["judgements"][j]
+        timestamp = replay["timestamp"]
+        if calc != should:
+            print(
+                f"Mismatched {j} count in replay {timestamp}: should be {should}, computed {calc}"
+            )
+            error_count += abs(calc - should)
+    return scores, note_to_press_map, error_count
 
 
 def parse_replays(map):
@@ -228,19 +246,10 @@ def parse_replays(map):
     print("Scoring replays")
     error_count = 0
     for replay in replays:
-        scores, note_to_press_map = score_replay(map, replay)
+        scores, note_to_press_map, cur_error_count = score_replay(map, replay)
         replay["scores"] = scores
         replay["note_to_press_map"] = note_to_press_map
-        # check judgements
-        for j, c in [("300", "3"), ("100", "1"), ("miss", "x")]:
-            calc = scores.count(c)
-            should = replay["judgements"][j]
-            timestamp = replay["timestamp"]
-            if calc != should:
-                print(
-                    f"Mismatched {j} count in replay {timestamp}: should be {should}, computed {calc}"
-                )
-                error_count += abs(calc - should)
+        error_count += cur_error_count
     print(f"Total errors: {error_count}")
 
     json_output = [
@@ -259,6 +268,53 @@ def parse_replays(map):
     return replays
 
 
+def create_auto_replay(map):
+    keys = []
+    presses = []
+    releases = []
+    left_hand = True
+    for i in range(len(map["notes"])):
+        if map["notes"][i] == " ":
+            continue
+        cur_note_time = math.floor(map["start_offset"] + i * map["ms_per_note"])
+        keys.append(map["notes"][i] if left_hand else map["notes"][i].upper())
+        left_hand = not left_hand
+        presses.append(cur_note_time)
+        releases.append(cur_note_time + 10)
+
+    judgements = {
+        "300": len(keys),
+        "100": 0,
+        "miss": 0,
+    }
+
+    replay = {
+        "timestamp": datetime.fromisoformat("2001-09-11 14:00:00.000000+00:00"),
+        "accuracy": 100.0,
+        "judgements": judgements,
+        "keys": "".join(keys),
+        "press_time_deltas": deltas(presses),
+        "release_time_deltas": deltas(releases),
+    }
+
+    scores, note_to_press_map, error_count = score_replay(map, replay)
+    assert error_count == 0
+    replay["scores"] = scores
+    replay["note_to_press_map"] = note_to_press_map
+
+    json_output = {
+        **replay,
+        "timestamp": str(replay["timestamp"]),
+        "press_time_deltas": replay["press_time_deltas"].tolist(),
+        "release_time_deltas": replay["release_time_deltas"].tolist(),
+    }
+
+    path = "../website/src/assets/auto_replay.json"
+    with open(path, "w") as output_file:
+        print(f"Writing auto replay to {path}")
+        json.dump(json_output, output_file, separators=(",", ":"))
+
+
 def main():
     print("Parsing map...")
     map = parse_map()
@@ -266,6 +322,9 @@ def main():
     print("Parsing replays...")
     parse_replays(map)
     print("Done parsing replays.")
+    print("Creating auto replay...")
+    create_auto_replay(map)
+    print("Done creating auto replay.")
 
 
 if __name__ == "__main__":

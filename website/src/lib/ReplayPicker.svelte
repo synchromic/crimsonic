@@ -1,5 +1,6 @@
 <script lang="ts">
   import replays from "../assets/replays.json";
+  import autoReplay from "../assets/auto_replay.json";
   import { pickedReplay } from "./pickerState.svelte";
   import { Replay, type JSONReplay } from "./replay/replay";
 
@@ -22,16 +23,25 @@
     return `${date} (${accuracy}%, ${misses} misses)`;
   }
 
-  $effect(() => {
-    const jsonReplay = replays.find((replay) => replay.timestamp === picked);
+  function oninput(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    let jsonReplay: JSONReplay | undefined;
+    if (target.value === "auto") {
+      jsonReplay = autoReplay;
+    } else {
+      jsonReplay = replays.find((replay) => replay.timestamp === target.value);
+    }
     pickedReplay.replay = jsonReplay ? new Replay(jsonReplay) : null;
-  });
+  }
+
+  $effect(() => {});
 </script>
 
 <div>
   <label for="replaySelect">Pick a replay: </label>
-  <select id="replaySelect" bind:value={picked}>
+  <select id="replaySelect" bind:value={picked} {oninput}>
     <option value={null} selected></option>
+    <option value="auto">Auto</option>
     {#each replays as replay}
       <option value={replay.timestamp}>{formatReplay(replay)}</option>
     {/each}
