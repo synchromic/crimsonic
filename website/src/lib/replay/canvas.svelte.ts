@@ -7,9 +7,15 @@ const noteWidth = 0.35;
 
 const missWindow = 84.5; // ms
 
+// used for copying same notes to each row
+const commonCanvas = new OffscreenCanvas(0, 0);
+const commonCtx = commonCanvas.getContext("2d")!;
+let commonTime: number | null = null;
+
 let canvas: HTMLCanvasElement | null = null;
 let ctx: CanvasRenderingContext2D | null = null;
 
+// should be constant (only varies with h)
 function receptorX(h: number) {
   return h;
 }
@@ -42,6 +48,14 @@ export function addReplayRow(row: IReplayRow) {
 export function register(elem: HTMLCanvasElement) {
   canvas = elem;
   ctx = elem.getContext("2d");
+  resize(elem);
+}
+
+export function resize(elem: HTMLCanvasElement) {
+  elem.width = elem.parentElement!.clientWidth;
+  elem.height = elem.parentElement!.clientHeight;
+  commonCanvas.width = elem.width;
+  commonTime = null;
 }
 
 export function draw(time: number) {
@@ -61,8 +75,14 @@ export function clear() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
 
-function drawNote(x: number, y: number, r: number, kind: string, dim: boolean) {
-  if (!ctx) return;
+function drawNote(
+  ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
+  x: number,
+  y: number,
+  r: number,
+  kind: string,
+  dim: boolean,
+) {
   ctx.beginPath();
   ctx.arc(x, y, r, 0, 2 * Math.PI);
   ctx.fillStyle = kind === "d" ? "#990000" : "#000099";
@@ -144,7 +164,77 @@ function scoreColor(score: ReplayScore) {
   }
 }
 
+// all the notes before the hit window are the same in each row so we drawn them only once and copy
+// returns the cutoff ms time (notes before this are not drawn)
+function refreshCommonNotes(t: number, h: number) {
+  const receptorMs = posToMs(t, h, receptorX(h));
+  const cutoff = receptorMs + missWindow;
+  if (commonTime === t && commonCanvas.height === h) return cutoff; // already drawn
+  commonCtx.clearRect(0, 0, commonCanvas.width, commonCanvas.height);
+  commonCanvas.height = h;
+  for (const i of visibleNotes(t, commonCanvas.width, h)) {
+    if (map.notes.charAt(i) === " ") continue;
+    const ms = noteToMs(i);
+    if (ms <= cutoff) break;
+    const x = msToPos(t, h, noteToMs(i));
+    drawNote(commonCtx, x, h / 2, noteRadius * h, map.notes.charAt(i), false);
+  }
+  commonTime = t;
+  return cutoff;
+}
+
 const noteRadius = 0.2; // in lane heights
+function drawVisibleNotes(replay: Replay, t: number, y: number, h: number) {
+  if (!ctx) throw new Error("canvas has not loaded");
+  const cutoff = refreshCommonNotes(t, h);
+  ctx.drawImage(commonCanvas, 0, y);
+  const leftNote = msToNote(posToMs(t, h, 0));
+  const rightNote = msToNote(cutoff);
+  const startIndex = Math.max(0, Math.floor(leftNote - leeway));
+  const endIndex = Math.min(map.notes.length - 1, Math.floor(rightNote));
+  for (let i = endIndex; i >= startIndex; i--) {
+    if (map.notes.charAt(i) === " ") continue;
+    const x = msToPos(t, h, noteToMs(i));
+    const score = replay.scoreAt(i);
+    const eventIndex = replay.noteToEventMap[i];
+    if (
+      score === ReplayScore.Miss &&
+      eventIndex !== null &&
+      replay.events[eventIndex].pressTime <= t
+    ) {
+      // note was incorrectly hit, draw X
+      drawNote(ctx, x, y + h / 2, noteRadius * h, map.notes.charAt(i), true);
+      drawCross(x, y + h / 2, noteRadius * h);
+    } else if (score !== ReplayScore.Miss) {
+      const event = replay.events[eventIndex!];
+      if (options.flyNotes) {
+        // bounce animation
+        const peakTime = 300; // ms
+        const timeSinceHit = t - event.pressTime;
+        const ratio = timeSinceHit / peakTime;
+        let offsetY = 0;
+        if (timeSinceHit > 0) {
+          offsetY = -0.6 * h * (1 - (1 - ratio) * (1 - ratio));
+        }
+        drawNote(
+          ctx,
+          x,
+          y + h / 2 + offsetY,
+          noteRadius * h,
+          map.notes.charAt(i),
+          false,
+        );
+      } else {
+        let dim = t > event.pressTime;
+        drawNote(ctx, x, y + h / 2, noteRadius * h, map.notes.charAt(i), dim);
+      }
+    } else {
+      drawNote(ctx, x, y + h / 2, noteRadius * h, map.notes.charAt(i), false);
+      if (t > noteToMs(i) + missWindow) drawCross(x, y + h / 2, noteRadius * h);
+    }
+  }
+}
+
 const receptorRadius = 0.25;
 const impactWidth = 1 / 25;
 const scoreHeight = 1 / 12;
@@ -185,47 +275,9 @@ export function drawReplayFrame(
       ctx.strokeStyle = "#ffffff";
       ctx.stroke();
     }
-
-    if (map.notes.charAt(i) === " ") continue;
-
-    const score = replay.scoreAt(i);
-    const eventIndex = replay.noteToEventMap[i];
-    let dim = false;
-    if (
-      score === ReplayScore.Miss &&
-      eventIndex !== null &&
-      replay.events[eventIndex].pressTime <= t
-    ) {
-      // note was incorrectly hit, draw X
-      drawNote(x, y + h / 2, noteRadius * h, map.notes.charAt(i), true);
-      drawCross(x, y + h / 2, noteRadius * h);
-    } else if (score !== ReplayScore.Miss) {
-      const event = replay.events[eventIndex!];
-      if (options.flyNotes) {
-        // bounce animation
-        const peakTime = 500; // ms
-        const timeSinceHit = t - event.pressTime;
-        const ratio = timeSinceHit / peakTime;
-        let offsetY = 0;
-        if (timeSinceHit > 0) {
-          offsetY = -1.5 * h * (1 - (1 - ratio) * (1 - ratio));
-        }
-        drawNote(
-          x,
-          y + h / 2 + offsetY,
-          noteRadius * h,
-          map.notes.charAt(i),
-          false,
-        );
-      } else {
-        let dim = t > event.pressTime;
-        drawNote(x, y + h / 2, noteRadius * h, map.notes.charAt(i), dim);
-      }
-    } else {
-      drawNote(x, y + h / 2, noteRadius * h, map.notes.charAt(i), false);
-      if (t > noteToMs(i) + missWindow) drawCross(x, y + h / 2, noteRadius * h);
-    }
   }
+
+  drawVisibleNotes(replay, t, y, h);
 
   // draw keypress lines
   const leftMs = posToMs(t, h, 0);

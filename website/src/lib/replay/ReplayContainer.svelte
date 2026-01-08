@@ -27,6 +27,7 @@
   onMount(() => {
     observer = new IntersectionObserver(intersectionCallback, {
       root: elem,
+      rootMargin: "0px 0px 50px 0px",
     });
     for (const child of rowsParent.children) {
       observer.observe(child);
@@ -52,6 +53,7 @@
     display: flex;
     flex-direction: row;
     max-width: 100%;
+    max-height: 100%;
     overflow-y: scroll;
     border: 1px solid;
     padding: 5px;
@@ -62,5 +64,12 @@
     position: sticky;
     top: 0;
     margin-left: 5px;
+  }
+
+  #rows {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-auto-rows: 1fr;
+    row-gap: 5px;
   }
 </style>

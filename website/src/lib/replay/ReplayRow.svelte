@@ -47,10 +47,11 @@
 
 <style>
   #outer {
-    /* min-height: 200px; */
     border: 1px solid;
     padding: 5px;
-    margin-top: 5px;
     box-sizing: border-box;
+    /* this is annoying to have but css doesn't seem to have a way to make 
+       each row height the same inside a scrollable container */
+    min-height: 150px;
   }
 </style>

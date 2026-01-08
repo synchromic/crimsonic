@@ -1,7 +1,6 @@
 <script lang="ts">
-  import { onDestroy, onMount } from "svelte";
-  import { draw, register } from "./canvas.svelte";
-  import { Replay } from "./replay";
+  import { onMount } from "svelte";
+  import { draw, register, resize } from "./canvas.svelte";
   import { playbackState } from "../playbackState.svelte";
 
   let canvas: HTMLCanvasElement;
@@ -9,7 +8,6 @@
 
   onMount(() => {
     register(canvas);
-    updateSize();
   });
 
   $effect(() => {
@@ -17,14 +15,16 @@
     draw(playbackState.time);
   });
 
-  function updateSize() {
-    canvas.width = canvas.parentElement!.clientWidth;
-    canvas.height = canvas.parentElement!.clientHeight;
+  function onresize() {
+    resize(canvas);
+    draw(playbackState.time);
   }
 </script>
 
+<svelte:window {onresize} />
+
 <div>
-  <canvas bind:this={canvas} onresize={updateSize}>
+  <canvas bind:this={canvas}>
     Javascript is not supported in your browser.
   </canvas>
 </div>
