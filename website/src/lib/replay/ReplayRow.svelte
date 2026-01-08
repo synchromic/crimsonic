@@ -3,6 +3,7 @@
   import type { Replay } from "./replay";
   import { addReplayRow } from "./canvas.svelte";
   import Stats from "./Stats.svelte";
+  import { containerState } from "./containerState.svelte";
 
   let { replay, visible }: { replay: Replay; visible: boolean } = $props();
   let container: HTMLDivElement;
@@ -28,10 +29,10 @@
     addReplayRow({
       replay,
       getH() {
-        return container.getBoundingClientRect().height;
+        return container.clientHeight;
       },
       getY() {
-        return container.getBoundingClientRect().top;
+        return container.offsetTop - containerState.scrollTop;
       },
       isVisible() {
         return visible;

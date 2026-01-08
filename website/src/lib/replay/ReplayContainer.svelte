@@ -4,16 +4,23 @@
   import { Replay } from "./replay";
   import ReplayCanvas from "./ReplayCanvas.svelte";
   import ReplayRow from "./ReplayRow.svelte";
+  import { draw } from "./canvas.svelte";
+  import { playbackState } from "../playbackState.svelte";
+  import { containerState } from "./containerState.svelte";
 
   let replays = jsonReplays.map((r) => new Replay(r));
   let elem: HTMLDivElement;
   let rowsParent: HTMLDivElement;
-  let scrollTop = $state(0);
   let observer: IntersectionObserver;
   let visibility = $state(jsonReplays.map((_) => false));
+  let scrollRateLimit: number | null = null;
 
   function onscroll() {
-    scrollTop = elem.scrollTop;
+    if (scrollRateLimit !== null) cancelAnimationFrame(scrollRateLimit);
+    scrollRateLimit = requestAnimationFrame(() => {
+      draw(playbackState.time);
+    });
+    containerState.scrollTop = elem.scrollTop;
   }
 
   function intersectionCallback(entries: IntersectionObserverEntry[]) {
@@ -43,7 +50,7 @@
       </div>
     {/each}
   </div>
-  <div id="canvas"><ReplayCanvas {scrollTop} /></div>
+  <div id="canvas"><ReplayCanvas /></div>
 </div>
 
 <style>
