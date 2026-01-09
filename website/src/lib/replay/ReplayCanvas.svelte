@@ -1,35 +1,28 @@
 <script lang="ts">
-  import { onDestroy, onMount } from "svelte";
-  import { clear, drawReplayFrame, register } from "./canvas";
-  import { Replay } from "./replay";
+  import { onMount } from "svelte";
+  import { draw, register, resize } from "./canvas.svelte";
   import { playbackState } from "../playbackState.svelte";
-
-  let { replay }: { replay: Replay } = $props();
 
   let canvas: HTMLCanvasElement;
 
-  function draw(time: number) {
-    clear();
-    drawReplayFrame(replay, time, 0, 300);
-  }
-
   onMount(() => {
     register(canvas);
-    updateSize();
   });
 
   $effect(() => {
     draw(playbackState.time);
   });
 
-  function updateSize() {
-    canvas.width = canvas.parentElement!.clientWidth;
-    canvas.height = canvas.parentElement!.clientHeight;
+  function onresize() {
+    resize(canvas);
+    draw(playbackState.time);
   }
 </script>
 
+<svelte:window {onresize} />
+
 <div>
-  <canvas bind:this={canvas} onresize={updateSize}>
+  <canvas bind:this={canvas}>
     Javascript is not supported in your browser.
   </canvas>
 </div>

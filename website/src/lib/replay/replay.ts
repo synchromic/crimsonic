@@ -9,14 +9,16 @@ export function msToNote(ms: number) {
   return (ms - map.start_offset) / map.ms_per_note;
 }
 
+interface Judgements {
+  "300": number;
+  "100": number;
+  miss: number;
+}
+
 export interface JSONReplay {
   timestamp: string;
   accuracy: number;
-  judgements: {
-    "300": number;
-    "100": number;
-    miss: number;
-  };
+  judgements: Judgements;
   keys: string;
   press_time_deltas: number[];
   release_time_deltas: number[];
@@ -94,6 +96,8 @@ export class Replay {
   private eventTree: IntervalTree<EventIndex>;
   noteToEventMap: (EventIndex | null)[];
   offsets: (number | null)[];
+  accuracy: number;
+  judgements: Judgements;
 
   constructor(json: JSONReplay) {
     this.date = new Date(json.timestamp);
@@ -132,6 +136,8 @@ export class Replay {
         this.offsets.push(event.pressTime - noteToMs(i));
       }
     }
+    this.accuracy = json.accuracy;
+    this.judgements = json.judgements;
   }
 
   eventsIntersecting(start: number, end: number): EventIndex[] {
