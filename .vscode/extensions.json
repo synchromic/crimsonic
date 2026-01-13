@@ -2,6 +2,7 @@
   "recommendations": [
     "esbenp.prettier-vscode",
     "charliermarsh.ruff",
-    "svelte.svelte-vscode"
+    "svelte.svelte-vscode",
+    "raczzalan.webgl-glsl-editor"
   ]
 }

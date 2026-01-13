@@ -16,7 +16,8 @@
     "svelte": "^5.43.8",
     "svelte-check": "^4.3.4",
     "typescript": "~5.9.3",
-    "vite": "npm:rolldown-vite@7.2.5"
+    "vite": "npm:rolldown-vite@7.2.5",
+    "vite-plugin-glsl": "^1.5.5"
   },
   "overrides": {
     "vite": "npm:rolldown-vite@7.2.5"
