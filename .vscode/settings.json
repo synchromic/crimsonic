@@ -26,6 +26,9 @@
     },
     "editor.tabSize": 4
   },
+  "[glsl]": {
+    "editor.tabSize": 2
+  },
   "ruff.enable": true,
   "python.terminal.activateEnvironment": true,
   "python.defaultInterpreterPath": "${workspaceFolder}/scripts/.venv",

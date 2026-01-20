@@ -1,7 +1,8 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { loadGl } from "./shader";
+  import { ShaderInstance } from "./shader";
   let canvas: HTMLCanvasElement;
+  let instance: ShaderInstance;
 
   function onresize() {
     canvas.width = window.innerWidth;
@@ -10,7 +11,7 @@
 
   onMount(() => {
     onresize();
-    loadGl(canvas);
+    instance = new ShaderInstance(canvas);
   });
 </script>
 
