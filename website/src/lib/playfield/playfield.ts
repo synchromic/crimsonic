@@ -22,10 +22,13 @@ function msToPos(t: number, ms: number) {
 
 const leeway = 100;
 function* visibleIndices(t: number, svgWidth: number) {
-  const maxNote = Math.ceil(msToNote(posToMs(t, svgWidth + leeway)));
-  const minNote = Math.floor(msToNote(posToMs(t, -leeway)));
+  const maxNote = Math.min(
+    map.notes.length - 1,
+    Math.ceil(msToNote(posToMs(t, svgWidth + leeway))),
+  );
+  const minNote = Math.max(0, Math.floor(msToNote(posToMs(t, -leeway))));
   for (let i = maxNote; i >= minNote; i--) {
-    yield i;
+    if (map.notes[i] !== " ") yield i;
   }
 }
 

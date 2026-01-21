@@ -32,7 +32,7 @@
   <svg
     width={containerWidth}
     height={containerHeight}
-    preserveAspectRatio="false"
+    preserveAspectRatio="none"
     viewBox={"0 0 " + svgWidth + " 100"}
   >
     {#each notes as note (note.index)}
