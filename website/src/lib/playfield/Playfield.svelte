@@ -5,7 +5,7 @@
   import { playbackState } from "../playbackState.svelte";
   import Circle from "./Circle.svelte";
 
-  // const { replay }: { replay: Replay } = $props();
+  let { replay, visible }: { replay: Replay; visible: boolean } = $props();
 
   let container: HTMLDivElement;
   let containerWidth = $state(800);
@@ -29,16 +29,18 @@
 <svelte:window {onresize} />
 
 <div bind:this={container}>
-  <svg
-    width={containerWidth}
-    height={containerHeight}
-    preserveAspectRatio="none"
-    viewBox={"0 0 " + svgWidth + " 100"}
-  >
-    {#each notes as note (note.index)}
-      <Circle x={note.x} kind={note.kind} />
-    {/each}
-  </svg>
+  {#if visible}
+    <svg
+      width={containerWidth}
+      height={containerHeight}
+      preserveAspectRatio="none"
+      viewBox={"0 0 " + svgWidth + " 100"}
+    >
+      {#each notes as note (note.index)}
+        <Circle x={note.x} kind={note.kind} />
+      {/each}
+    </svg>
+  {/if}
 </div>
 
 <style>
