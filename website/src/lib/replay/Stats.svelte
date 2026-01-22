@@ -4,6 +4,23 @@
 
   const { replay }: { replay: Replay } = $props();
 
+  function formatDate(date: Date) {
+    return date.toLocaleString(undefined, {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    });
+  }
+
+  function replayName(replay: Replay) {
+    const date = formatDate(new Date(replay.date));
+    const accuracy = (replay.accuracy * 100).toFixed(2);
+    const misses = replay.judgements.miss;
+    return `${date} (${accuracy}%, ${misses} misses)`;
+  }
+
   let curIndex = $derived(Math.floor(msToNote(playbackState.time)));
   let greats = $derived(
     replay.scorePrefixSums.query(ReplayScore.Great, curIndex),
@@ -15,7 +32,8 @@
   let accuracy = $derived(((greats + oks / 3) / (greats + oks + misses)) * 100);
 </script>
 
-<div>
+<div>{replayName(replay)}</div>
+<div class="table-div">
   <table>
     <tbody>
       <tr>
@@ -35,8 +53,8 @@
 </div>
 
 <style>
-  div {
-    margin: 10px 0;
+  .table-div {
+    margin-top: 10px;
   }
 
   table,
