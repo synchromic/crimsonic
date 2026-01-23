@@ -144,6 +144,11 @@ export class Replay {
     return this.eventTree.search([start, end]);
   }
 
+  noteEvent(noteIndex: number): ReplayEvent | null {
+    const eventIndex = this.noteToEventMap[noteIndex];
+    return eventIndex ? this.events[eventIndex] : null;
+  }
+
   scoreAt(index: number): ReplayScore | null {
     const char = this.scores.charAt(index);
     if (char === " ") return null;

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import type { Replay } from "../replay/replay";
-  import { visibleNotes } from "./playfield";
+  import { receptorX, visibleBarlines, visibleNotes } from "./playfield";
   import { playbackState } from "../playbackState.svelte";
   import Circle from "./Circle.svelte";
 
@@ -12,9 +12,12 @@
   let containerHeight = $state(100);
   let svgWidth = $derived((containerWidth / containerHeight) * 100);
 
-  let notes = $derived.by(() => {
-    return visibleNotes(playbackState.time, svgWidth);
-  });
+  let barlines = $derived.by(() =>
+    visibleBarlines(playbackState.time, svgWidth),
+  );
+  let notes = $derived.by(() =>
+    visibleNotes(replay, playbackState.time, svgWidth),
+  );
 
   function onresize() {
     containerWidth = container.clientWidth;
@@ -36,8 +39,27 @@
       preserveAspectRatio="none"
       viewBox={"0 0 " + svgWidth + " 100"}
     >
+      <!-- receptor -->
+      <circle
+        cx={receptorX}
+        cy={50}
+        r={26}
+        fill="none"
+        stroke="#777777"
+        stroke-width={3}
+      />
+      {#each barlines as barX}
+        <line
+          x1={barX}
+          y1={0}
+          x2={barX}
+          y2={100}
+          stroke="#FFFFFF"
+          stroke-width={2}
+        />
+      {/each}
       {#each notes as note (note.index)}
-        <Circle x={note.x} kind={note.kind} />
+        <Circle {...note} />
       {/each}
     </svg>
   {/if}
