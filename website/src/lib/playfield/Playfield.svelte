@@ -3,7 +3,8 @@
   import type { Replay } from "../replay/replay";
   import { receptorX, visibleBarlines, visibleNotes } from "./playfield";
   import { playbackState } from "../playbackState.svelte";
-  import Circle from "./Circle.svelte";
+  import Note from "./Note.svelte";
+  import NoteScore from "./NoteScore.svelte";
 
   let { replay, visible }: { replay: Replay; visible: boolean } = $props();
 
@@ -48,6 +49,9 @@
         stroke="#777777"
         stroke-width={3}
       />
+      {#each notes as note, index (note.index)}
+        <NoteScore score={note.score} x={note.x} nextX={notes[index - 1]?.x} />
+      {/each}
       {#each barlines as barX}
         <line
           x1={barX}
@@ -59,7 +63,7 @@
         />
       {/each}
       {#each notes as note (note.index)}
-        <Circle {...note} />
+        <Note {...note} />
       {/each}
     </svg>
   {/if}

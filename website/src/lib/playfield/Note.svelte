@@ -1,7 +1,8 @@
 <script lang="ts">
+  import NoteMiss from "./NoteMiss.svelte";
   import type { SVGNote } from "./playfield";
 
-  const { kind, x, transparent }: SVGNote = $props();
+  const { kind, x, y, transparent, showMiss }: SVGNote = $props();
 
   const hue = $derived(kind === "d" ? "25" : "270");
   const alpha = $derived(transparent ? " / 20%" : "");
@@ -11,9 +12,12 @@
 
 <circle
   cx={x}
-  cy={50}
+  cy={y}
   r={20}
   fill={color}
   stroke={strokeColor}
   stroke-width={3}
 />
+{#if showMiss}
+  <NoteMiss {x} />
+{/if}

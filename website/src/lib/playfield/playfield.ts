@@ -1,16 +1,20 @@
 import map from "../../assets/map.json";
-import { msToNote, noteToMs, Replay } from "../replay/replay";
+import { options } from "../options.svelte";
+import { msToNote, noteToMs, Replay, ReplayScore } from "../replay/replay";
 
 export interface SVGNote {
   index: number;
   x: number;
+  y: number;
   kind: string;
   transparent: boolean;
+  score: ReplayScore;
+  showMiss: boolean;
 }
 
 // assume svg height of 100
 export const receptorX = 100;
-const noteWidth = 35; // how far between note centers
+export const noteWidth = 35; // how far between note centers
 const pixelsPerMs = noteWidth / map.ms_per_note;
 
 function posToMs(t: number, x: number) {
@@ -21,27 +25,57 @@ function msToPos(t: number, ms: number) {
   return (ms - t) * pixelsPerMs + receptorX;
 }
 
-export function visibleNotes(
-  replay: Replay,
-  t: number,
-  svgWidth: number,
-): SVGNote[] {
+function* iterateNotes(t: number, svgWidth: number) {
   const leeway = 100;
   const maxNote = Math.min(
     map.notes.length - 1,
     Math.ceil(msToNote(posToMs(t, svgWidth + leeway))),
   );
   const minNote = Math.max(0, Math.floor(msToNote(posToMs(t, -leeway))));
-  let result: SVGNote[] = [];
   for (let i = maxNote; i >= minNote; i--) {
+    yield i;
+  }
+}
+
+function flyOffset(t: number, pressTime: number) {
+  const peakTime = 300; // ms
+  const timeSinceHit = t - pressTime;
+  const ratio = timeSinceHit / peakTime;
+  return -60 * (1 - (1 - ratio) * (1 - ratio));
+}
+
+export function visibleNotes(
+  replay: Replay,
+  t: number,
+  svgWidth: number,
+): SVGNote[] {
+  let result: SVGNote[] = [];
+  for (let i of iterateNotes(t, svgWidth)) {
     if (map.notes[i] !== " ") {
       const event = replay.noteEvent(i);
-      const transparent = event ? event.pressTime <= t : false;
+      let transparent, y, showMiss;
+      if (event && event.pressTime <= t) {
+        transparent =
+          replay.scoreAt(i) === ReplayScore.Miss || !options.flyNotes;
+        showMiss = replay.scoreAt(i) === ReplayScore.Miss;
+        if (options.flyNotes && replay.scoreAt(i) !== ReplayScore.Miss) {
+          y = 50 + flyOffset(t, event.pressTime);
+        } else {
+          y = 50;
+        }
+      } else {
+        transparent = false;
+        y = 50;
+        showMiss = replay.scoreAt(i) === ReplayScore.Miss && noteToMs(i) <= t;
+      }
       result.push({
         index: i,
         x: msToPos(t, noteToMs(i)),
+        y,
         kind: map.notes[i],
         transparent,
+        score: replay.scoreAt(i)!,
+        showMiss,
       });
     }
   }
