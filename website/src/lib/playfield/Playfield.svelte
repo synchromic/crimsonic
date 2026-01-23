@@ -49,8 +49,12 @@
         stroke="#777777"
         stroke-width={3}
       />
-      {#each notes as note, index (note.index)}
-        <NoteScore score={note.score} x={note.x} nextX={notes[index - 1]?.x} />
+      {#each notes as note (note.index)}
+        <NoteScore
+          t={playbackState.time}
+          score={note.score}
+          index={note.index}
+        />
       {/each}
       {#each barlines as barX}
         <line

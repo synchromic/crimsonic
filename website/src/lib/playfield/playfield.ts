@@ -21,7 +21,7 @@ function posToMs(t: number, x: number) {
   return (x - receptorX) / pixelsPerMs + t;
 }
 
-function msToPos(t: number, ms: number) {
+export function msToPos(t: number, ms: number) {
   return (ms - t) * pixelsPerMs + receptorX;
 }
 
