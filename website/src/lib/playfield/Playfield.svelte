@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   import type { Replay } from "../replay/replay";
   import {
+    msToPos,
     receptorX,
     visibleBarlines,
     visibleEvents,
@@ -19,15 +20,11 @@
   let containerHeight = $state(100);
   let svgWidth = $derived((containerWidth / containerHeight) * 100);
 
-  let barlines = $derived.by(() =>
-    visibleBarlines(playbackState.time, svgWidth),
-  );
-  let notes = $derived.by(() =>
-    visibleNotes(replay, playbackState.time, svgWidth),
-  );
-  let events = $derived.by(() =>
-    visibleEvents(replay, playbackState.time, svgWidth),
-  );
+  let offsetX = $derived(-msToPos(playbackState.time) + receptorX);
+
+  let barlines = $derived(visibleBarlines(playbackState.time, svgWidth));
+  let notes = $derived(visibleNotes(replay, playbackState.time, svgWidth));
+  let events = $derived(visibleEvents(replay, playbackState.time, svgWidth));
 
   function onresize() {
     containerWidth = container.clientWidth;
@@ -49,38 +46,36 @@
       preserveAspectRatio="none"
       viewBox={"0 0 " + svgWidth + " 100"}
     >
-      <!-- receptor -->
-      <circle
-        cx={receptorX}
-        cy={50}
-        r={26}
-        fill="none"
-        stroke="#777777"
-        stroke-width={3}
-      />
-      {#each notes as note (note.index)}
-        <NoteScore
-          t={playbackState.time}
-          score={note.score}
-          index={note.index}
+      <g transform={`translate(${offsetX} 0)`}>
+        <!-- receptor -->
+        <circle
+          cx={msToPos(playbackState.time)}
+          cy={50}
+          r={31}
+          fill="none"
+          stroke="#777777"
+          stroke-width={3}
         />
-      {/each}
-      {#each barlines as barX}
-        <line
-          x1={barX}
-          y1={0}
-          x2={barX}
-          y2={100}
-          stroke="#FFFFFF"
-          stroke-width={2}
-        />
-      {/each}
-      {#each notes as note (note.index)}
-        <Note {...note} />
-      {/each}
-      {#each events as event (event.index)}
-        <ReplayEvent {event} t={playbackState.time} />
-      {/each}
+        {#each notes as note (note.index)}
+          <NoteScore score={note.score} index={note.index} />
+        {/each}
+        {#each barlines as barX}
+          <line
+            x1={barX}
+            y1={0}
+            x2={barX}
+            y2={100}
+            stroke="#FFFFFF"
+            stroke-width={2}
+          />
+        {/each}
+        {#each notes as note (note.index)}
+          <Note {...note} />
+        {/each}
+        {#each events as event (event.index)}
+          <ReplayEvent {event} />
+        {/each}
+      </g>
     </svg>
   {/if}
 </div>

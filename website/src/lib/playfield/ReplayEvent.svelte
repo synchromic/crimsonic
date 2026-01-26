@@ -2,9 +2,9 @@
   import { ReplayKey, type ReplayEvent } from "../replay/replay";
   import { msToPos } from "./playfield";
 
-  const { event, t }: { event: ReplayEvent; t: number } = $props();
+  const { event }: { event: ReplayEvent } = $props();
 
-  const x = $derived(msToPos(t, event.pressTime));
+  const x = $derived(msToPos(event.pressTime));
   const y = $derived(
     event.key === ReplayKey.LeftDon || event.key === ReplayKey.LeftKat
       ? 40

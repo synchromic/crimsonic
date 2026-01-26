@@ -2,8 +2,7 @@
   import { noteToMs, ReplayScore } from "../replay/replay";
   import { msToPos, noteWidth } from "./playfield";
 
-  const { t, score, index }: { t: number; score: ReplayScore; index: number } =
-    $props();
+  const { score, index }: { score: ReplayScore; index: number } = $props();
 
   const hue = $derived.by(() => {
     switch (score) {
@@ -19,9 +18,9 @@
 
   // notes aren't actually totally evenly spaced so we need to adjust width
   // to prevent 1-pixel overlaps/gaps
-  const x = $derived(Math.floor(msToPos(t, noteToMs(index)) - noteWidth / 2));
+  const x = $derived(Math.floor(msToPos(noteToMs(index)) - noteWidth / 2));
   const nextX = $derived(
-    Math.floor(msToPos(t, noteToMs(index + 1)) - noteWidth / 2),
+    Math.floor(msToPos(noteToMs(index + 1)) - noteWidth / 2),
   );
   const width = $derived(nextX - x);
 </script>
