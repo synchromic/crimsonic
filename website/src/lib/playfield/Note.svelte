@@ -13,7 +13,7 @@
 <circle
   cx={x}
   cy={y}
-  r={20}
+  r={25}
   fill={color}
   stroke={strokeColor}
   stroke-width={3}

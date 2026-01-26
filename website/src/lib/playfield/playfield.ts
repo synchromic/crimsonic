@@ -14,7 +14,7 @@ export interface SVGNote {
 
 // assume svg height of 100
 export const receptorX = 100;
-export const noteWidth = 35; // how far between note centers
+export const noteWidth = 42; // how far between note centers
 const pixelsPerMs = noteWidth / map.ms_per_note;
 
 function posToMs(t: number, x: number) {
@@ -93,4 +93,11 @@ export function visibleBarlines(t: number, svgWidth: number) {
     result.push(msToPos(t, noteToMs(i * 16)));
   }
   return result;
+}
+
+export function visibleEvents(replay: Replay, t: number, svgWidth: number) {
+  const leeway = 50;
+  const leftMs = posToMs(t, -leeway);
+  const rightMs = posToMs(t, svgWidth + leeway);
+  return replay.eventsIntersecting(leftMs, rightMs);
 }

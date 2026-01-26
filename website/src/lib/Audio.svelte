@@ -57,23 +57,21 @@
   let intervalHandler: number | null = null;
   function scheduleHitsounds(replay: Replay) {
     const t = playbackState.computeTime();
-    let eventIndices = replay.eventsIntersecting(t, t + lookahead);
+    let events = replay.eventsIntersecting(t, t + lookahead);
     // discard already scheduled events
-    eventIndices = eventIndices.filter(
-      (index) =>
-        !scheduled.some((sched) => sched.index === index) &&
-        replay.events[index].pressTime >= t,
+    events = events.filter(
+      (e) =>
+        !scheduled.some((sched) => sched.index === e.index) && e.pressTime >= t,
     );
-    for (const index of eventIndices) {
-      const event = replay.events[index];
+    for (const event of events) {
       const time =
         audioCtx.currentTime + (event.pressTime - t + hitsoundOffset) / 1000;
       const which = event.key.toLowerCase() === "d" ? "don" : "kat";
       const source = playHitsound(which, time);
       source.addEventListener("ended", () => {
-        scheduled = scheduled.filter((sched) => sched.index !== index);
+        scheduled = scheduled.filter((sched) => sched.index !== event.index);
       });
-      scheduled.push({ index: index, time, source });
+      scheduled.push({ index: event.index, time, source });
     }
   }
 

@@ -1,10 +1,16 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import type { Replay } from "../replay/replay";
-  import { receptorX, visibleBarlines, visibleNotes } from "./playfield";
+  import {
+    receptorX,
+    visibleBarlines,
+    visibleEvents,
+    visibleNotes,
+  } from "./playfield";
   import { playbackState } from "../playbackState.svelte";
   import Note from "./Note.svelte";
   import NoteScore from "./NoteScore.svelte";
+  import ReplayEvent from "./ReplayEvent.svelte";
 
   let { replay, visible }: { replay: Replay; visible: boolean } = $props();
 
@@ -18,6 +24,9 @@
   );
   let notes = $derived.by(() =>
     visibleNotes(replay, playbackState.time, svgWidth),
+  );
+  let events = $derived.by(() =>
+    visibleEvents(replay, playbackState.time, svgWidth),
   );
 
   function onresize() {
@@ -68,6 +77,9 @@
       {/each}
       {#each notes as note (note.index)}
         <Note {...note} />
+      {/each}
+      {#each events as event (event.index)}
+        <ReplayEvent {event} t={playbackState.time} />
       {/each}
     </svg>
   {/if}
