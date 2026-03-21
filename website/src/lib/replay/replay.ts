@@ -9,10 +9,16 @@ export function msToNote(ms: number) {
   return (ms - map.start_offset) / map.ms_per_note;
 }
 
-interface Judgements {
+// TODO: rename these to be less annoying
+export interface Judgements {
   "300": number;
   "100": number;
   miss: number;
+}
+
+export function judgementsToAcc(judgements: Judgements) {
+  const total = judgements["300"] + judgements["100"] + judgements.miss;
+  return ((judgements["300"] + judgements["100"] / 3) / total) * 100;
 }
 
 export interface JSONReplay {
@@ -85,6 +91,14 @@ class ScorePrefixSums {
     if (index < 0) return 0;
     if (index >= this.length) index = this.length - 1;
     return this.sums[scoreType][index];
+  }
+
+  queryAll(index: number): Judgements {
+    return {
+      "300": this.query(ReplayScore.Great, index),
+      "100": this.query(ReplayScore.Ok, index),
+      miss: this.query(ReplayScore.Miss, index),
+    };
   }
 }
 

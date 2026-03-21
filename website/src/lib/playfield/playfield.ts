@@ -103,3 +103,23 @@ export function visibleEvents(replay: Replay, t: number, svgWidth: number) {
   const rightMs = screenPosToMs(t, svgWidth + leeway);
   return replay.eventsIntersecting(leftMs, rightMs);
 }
+
+export function scoreColor(score: ReplayScore, transparency?: string) {
+  let hue;
+  switch (score) {
+    case ReplayScore.Great:
+      hue = 265;
+      break;
+    case ReplayScore.Ok:
+      hue = 145;
+      break;
+    case ReplayScore.Miss:
+      hue = 30;
+      break;
+  }
+  if (transparency !== undefined) {
+    return `oklch(0.64 0.19 ${hue} / ${transparency})`;
+  } else {
+    return `oklch(0.64 0.19 ${hue})`;
+  }
+}

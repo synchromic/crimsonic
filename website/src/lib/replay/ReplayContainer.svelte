@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import jsonReplays from "../../assets/replays.json";
   import { Replay } from "./replay";
-  import Stats from "./Stats.svelte";
+  import Stats from "../stats/Stats.svelte";
   import Playfield from "../playfield/Playfield.svelte";
   import type { Attachment } from "svelte/attachments";
 
@@ -38,7 +38,7 @@
 <div id="outer" bind:this={elem}>
   {#each replays as replay, index}
     <div class="stats" data-index={index} {@attach attachReplay}>
-      <Stats {replay} />
+      <Stats {replay} visible={visibility[index]} />
     </div>
     <div class="playfield">
       <Playfield {replay} visible={visibility[index]} />

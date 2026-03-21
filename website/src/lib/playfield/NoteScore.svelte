@@ -1,20 +1,10 @@
 <script lang="ts">
   import { noteToMs, ReplayScore } from "../replay/replay";
-  import { msToPos, noteWidth } from "./playfield";
+  import { msToPos, noteWidth, scoreColor } from "./playfield";
 
   const { score, index }: { score: ReplayScore; index: number } = $props();
 
-  const hue = $derived.by(() => {
-    switch (score) {
-      case ReplayScore.Great:
-        return 265;
-      case ReplayScore.Ok:
-        return 145;
-      case ReplayScore.Miss:
-        return 30;
-    }
-  });
-  const color = $derived(`oklch(0.64 0.19 ${hue} / 50%)`);
+  const color = $derived(scoreColor(score, "50%"));
 
   // notes aren't actually totally evenly spaced so we need to adjust width
   // to prevent 1-pixel overlaps/gaps
