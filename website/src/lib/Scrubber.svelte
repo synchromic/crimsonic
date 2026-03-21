@@ -11,7 +11,7 @@
       playbackState.status === "paused" ||
       playbackState.status === "playingGrabbed"
     ) {
-      playbackState.time = map.start_offset + value;
+      playbackState.setTime(map.start_offset + value);
     }
   }
 

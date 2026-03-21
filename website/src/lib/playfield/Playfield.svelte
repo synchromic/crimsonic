@@ -22,9 +22,9 @@
 
   let offsetX = $derived(-msToPos(playbackState.time) + receptorX);
 
-  let barlines = $derived(visibleBarlines(playbackState.time, svgWidth));
-  let notes = $derived(visibleNotes(replay, playbackState.time, svgWidth));
-  let events = $derived(visibleEvents(replay, playbackState.time, svgWidth));
+  let barlines = $derived(visibleBarlines(playbackState.timeF, svgWidth));
+  let notes = $derived(visibleNotes(replay, playbackState.timeF, svgWidth));
+  let events = $derived(visibleEvents(replay, playbackState.timeF, svgWidth));
 
   function onresize() {
     containerWidth = container.clientWidth;

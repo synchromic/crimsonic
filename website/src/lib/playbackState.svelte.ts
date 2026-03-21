@@ -1,3 +1,5 @@
+import map from "../assets/gen/map.json";
+
 type PlaybackStatus = "paused" | "playing" | "playingGrabbed";
 
 class PlaybackState {
@@ -7,6 +9,9 @@ class PlaybackState {
   playStart: Date | null = null;
   playStartTime: number | null = null;
   animationFrame: number | null = null;
+
+  // this is used to optimize reactivity to prevent updates happening too often
+  timeF = $state(0); // time floored to nearest note
 
   get status() {
     return this._status;
@@ -34,6 +39,14 @@ class PlaybackState {
     }
   }
 
+  setTime(t: number) {
+    this.time = t;
+    const newTimeF = Math.floor(t / map.ms_per_note) * map.ms_per_note;
+    if (this.timeF !== newTimeF) {
+      this.timeF = newTimeF;
+    }
+  }
+
   // more accurate time that isn't just updated every animation frame
   computeTime() {
     if (this.playStart === null || this.playStartTime === null)
@@ -45,7 +58,7 @@ class PlaybackState {
 
   private updateTime() {
     if (this.playStart !== null && this.playStartTime !== null) {
-      this.time = this.computeTime();
+      this.setTime(this.computeTime());
       this.animationFrame = requestAnimationFrame(() => this.updateTime());
     }
   }
