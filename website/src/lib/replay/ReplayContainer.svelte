@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import jsonReplays from "../../assets/replays.json";
+  import jsonReplays from "../../assets/gen/replays.json";
   import { Replay } from "./replay";
   import Stats from "../stats/Stats.svelte";
   import Playfield from "../playfield/Playfield.svelte";

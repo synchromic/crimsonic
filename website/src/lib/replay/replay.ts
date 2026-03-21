@@ -1,5 +1,5 @@
 import IntervalTree from "@flatten-js/interval-tree";
-import map from "../../assets/map.json";
+import map from "../../assets/gen/map.json";
 
 export function noteToMs(noteIndex: number) {
   return Math.floor(noteIndex * map.ms_per_note + map.start_offset);

@@ -12,6 +12,6 @@ Use uv: in the `scripts` directory, `uv sync` to install dependencies and `uv ru
 
 ### Website
 
-Setup: `npm install` in the root directory to setup development tools like Prettier, the code formatter. `npm install` in the `website` directory to install dependencies for the website.
+Setup: `npm install` in the root directory to setup development tools like Prettier, the code formatter. `npm install` in the `website` directory to install dependencies for the website. Before running, must generate data files using the python script.
 
 Development: `npm run dev` in the root directory to start the Vite development server.

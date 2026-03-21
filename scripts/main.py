@@ -53,7 +53,7 @@ def parse_map():
         "od": map.overall_difficulty,
         "notes": notes_str,
     }
-    path = "../website/src/assets/map.json"
+    path = "../website/src/assets/gen/map.json"
     with open(path, "w") as output_file:
         print(f"Writing map to {path}")
         json.dump(json_output, output_file)
@@ -261,7 +261,7 @@ def parse_replays(map):
         }
         for replay in replays
     ]
-    path = "../website/src/assets/replays.json"
+    path = "../website/src/assets/gen/replays.json"
     with open(path, "w") as output_file:
         print(f"Writing replays to {path}")
         json.dump(json_output, output_file, separators=(",", ":"))
@@ -309,7 +309,7 @@ def create_auto_replay(map):
         "release_time_deltas": replay["release_time_deltas"].tolist(),
     }
 
-    path = "../website/src/assets/auto_replay.json"
+    path = "../website/src/assets/gen/auto_replay.json"
     with open(path, "w") as output_file:
         print(f"Writing auto replay to {path}")
         json.dump(json_output, output_file, separators=(",", ":"))

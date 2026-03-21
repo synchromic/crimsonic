@@ -1,4 +1,4 @@
-import map from "../../assets/map.json";
+import map from "../../assets/gen/map.json";
 import { options } from "../options.svelte";
 import { msToNote, noteToMs, Replay, ReplayScore } from "../replay/replay";
 

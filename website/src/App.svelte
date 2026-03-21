@@ -4,7 +4,7 @@
   import { options } from "./lib/options.svelte";
   import ReplayContainer from "./lib/replay/ReplayContainer.svelte";
 
-  import autoReplayJSON from "./assets/auto_replay.json";
+  import autoReplayJSON from "./assets/gen/auto_replay.json";
   import { Replay } from "./lib/replay/replay";
   import Background from "./lib/background/Background.svelte";
 

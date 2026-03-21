@@ -1,5 +1,5 @@
 <script lang="ts">
-  import map from "../assets/map.json";
+  import map from "../assets/gen/map.json";
   import { playbackState } from "./playbackState.svelte";
 
   let mapLen = map.notes.length * map.ms_per_note;
