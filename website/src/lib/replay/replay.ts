@@ -50,6 +50,7 @@ function fromDeltas(arr: number[]) {
 }
 
 export interface ReplayEvent {
+  index: number;
   key: ReplayKey;
   pressTime: number;
   releaseTime: number;
@@ -111,6 +112,7 @@ export class Replay {
     const releaseTimes = fromDeltas(json.release_time_deltas);
     for (let i = 0; i < json.keys.length; i++) {
       const event: ReplayEvent = {
+        index: i,
         key: json.keys.charAt(i) as ReplayKey,
         pressTime: pressTimes[i],
         releaseTime: releaseTimes[i],
@@ -140,8 +142,13 @@ export class Replay {
     this.judgements = json.judgements;
   }
 
-  eventsIntersecting(start: number, end: number): EventIndex[] {
-    return this.eventTree.search([start, end]);
+  eventsIntersecting(start: number, end: number): ReplayEvent[] {
+    return this.eventTree.search([start, end]).map((i) => this.events[i]);
+  }
+
+  noteEvent(noteIndex: number): ReplayEvent | null {
+    const eventIndex = this.noteToEventMap[noteIndex];
+    return eventIndex ? this.events[eventIndex] : null;
   }
 
   scoreAt(index: number): ReplayScore | null {

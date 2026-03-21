@@ -2,26 +2,14 @@
   import { onMount } from "svelte";
   import jsonReplays from "../../assets/replays.json";
   import { Replay } from "./replay";
-  import ReplayCanvas from "./ReplayCanvas.svelte";
-  import ReplayRow from "./ReplayRow.svelte";
-  import { draw } from "./canvas.svelte";
-  import { playbackState } from "../playbackState.svelte";
-  import { containerState } from "./containerState.svelte";
+  import Stats from "./Stats.svelte";
+  import Playfield from "../playfield/Playfield.svelte";
+  import type { Attachment } from "svelte/attachments";
 
-  let replays = jsonReplays.map((r) => new Replay(r));
+  let replays: Replay[] = $state([]);
   let elem: HTMLDivElement;
-  let rowsParent: HTMLDivElement;
   let observer: IntersectionObserver;
   let visibility = $state(jsonReplays.map((_) => false));
-  let scrollRateLimit: number | null = null;
-
-  function onscroll() {
-    if (scrollRateLimit !== null) cancelAnimationFrame(scrollRateLimit);
-    scrollRateLimit = requestAnimationFrame(() => {
-      draw(playbackState.time);
-    });
-    containerState.scrollTop = elem.scrollTop;
-  }
 
   function intersectionCallback(entries: IntersectionObserverEntry[]) {
     for (const entry of entries) {
@@ -31,52 +19,51 @@
     }
   }
 
+  const attachReplay: Attachment = (element) => {
+    observer.observe(element);
+    return () => {
+      observer.unobserve(element);
+    };
+  };
+
   onMount(() => {
+    replays = jsonReplays.map((r) => new Replay(r));
     observer = new IntersectionObserver(intersectionCallback, {
       root: elem,
       rootMargin: "0px 0px 50px 0px",
     });
-    for (const child of rowsParent.children) {
-      observer.observe(child);
-    }
   });
 </script>
 
-<div id="outer" bind:this={elem} {onscroll}>
-  <div id="rows" bind:this={rowsParent}>
-    {#each replays as replay, index}
-      <div data-index={index}>
-        <ReplayRow {replay} visible={visibility[index]} />
-      </div>
-    {/each}
-  </div>
-  <div id="canvas"><ReplayCanvas /></div>
+<div id="outer" bind:this={elem}>
+  {#each replays as replay, index}
+    <div class="stats" data-index={index} {@attach attachReplay}>
+      <Stats {replay} />
+    </div>
+    <div class="playfield">
+      <Playfield {replay} visible={visibility[index]} />
+    </div>
+  {/each}
 </div>
 
 <style>
   #outer {
     flex-grow: 1;
     margin-bottom: 10px;
-    display: flex;
-    flex-direction: row;
     max-width: 100%;
     max-height: 100%;
+    display: grid;
+    grid-template-columns: max-content auto;
+    grid-auto-rows: max-content;
+    gap: 5px;
     overflow-y: scroll;
     border: 1px solid;
     padding: 5px;
   }
 
-  #canvas {
-    flex-grow: 1;
-    position: sticky;
-    top: 0;
-    margin-left: 5px;
-  }
-
-  #rows {
-    display: grid;
-    grid-template-columns: 1fr;
-    grid-auto-rows: 1fr;
-    row-gap: 5px;
+  .stats {
+    border: 1px solid;
+    padding: 5px;
+    box-sizing: border-box;
   }
 </style>
