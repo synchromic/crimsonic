@@ -66,8 +66,4 @@
     padding: 5px;
     box-sizing: border-box;
   }
-
-  .playfield {
-    flex-grow: 1;
-  }
 </style>

@@ -38,11 +38,11 @@
 
 <svelte:window {onresize} />
 
-<div bind:this={container}>
+<div id="container" bind:this={container}>
   {#if visible}
     <svg
-      width={containerWidth}
-      height={containerHeight}
+      width={Math.floor(containerWidth)}
+      height={Math.floor(containerHeight)}
       preserveAspectRatio="none"
       viewBox={"0 0 " + svgWidth + " 100"}
     >
@@ -81,9 +81,16 @@
 </div>
 
 <style>
-  div {
+  #container {
+    position: relative;
     overflow: hidden;
     height: 100%;
     min-height: 50px;
+  }
+
+  svg {
+    position: absolute;
+    left: 0;
+    top: 0;
   }
 </style>
