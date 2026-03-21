@@ -51,7 +51,7 @@
     flex-grow: 1;
     margin-bottom: 10px;
     max-width: 100%;
-    max-height: 100%;
+    max-height: 95vh;
     display: grid;
     grid-template-columns: max-content auto;
     grid-auto-rows: max-content;
