@@ -10,7 +10,7 @@
   let { size, judgements }: { size: number; judgements: Judgements } = $props();
   let accuracy = $derived(judgementsToAcc(judgements));
   let accText = $derived(accuracy.toFixed(2) + "%");
-  let total = $derived(judgements["300"] + judgements["100"] + judgements.miss);
+  let total = $derived(judgements.great + judgements.ok + judgements.miss);
 </script>
 
 <svg width={size} height={size} viewBox="-1 -1 2 2">
@@ -21,11 +21,11 @@
     <AccPieChartArc
       fill={scoreColor(ReplayScore.Ok)}
       start={0}
-      end={judgements["100"] / total}
+      end={judgements.ok / total}
     />
     <AccPieChartArc
       fill={scoreColor(ReplayScore.Great)}
-      start={judgements["100"] / total}
+      start={judgements.ok / total}
       end={1 - judgements.miss / total}
     />
     <AccPieChartArc

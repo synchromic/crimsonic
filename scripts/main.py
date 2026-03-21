@@ -88,8 +88,8 @@ def parse_replay(path):
     # print(replay.timestamp)
 
     judgements = {
-        "300": replay.count_300,
-        "100": replay.count_100,
+        "great": replay.count_300,
+        "ok": replay.count_100,
         "miss": replay.count_miss,
     }
 
@@ -135,8 +135,8 @@ def parse_replay(path):
     presses = deltas([ev["press_time"] for ev in events])
     releases = deltas([ev["release_time"] for ev in events])
 
-    total_notes = judgements["300"] + judgements["100"] + judgements["miss"]
-    accuracy = (judgements["300"] + judgements["100"] / 3) / total_notes
+    total_notes = judgements["great"] + judgements["ok"] + judgements["miss"]
+    accuracy = (judgements["great"] + judgements["ok"] / 3) / total_notes
 
     return {
         "timestamp": replay.timestamp,
@@ -225,7 +225,7 @@ def score_replay(map, replay):
 
     # check judgements
     error_count = 0
-    for j, c in [("300", "3"), ("100", "1"), ("miss", "x")]:
+    for j, c in [("great", "3"), ("ok", "1"), ("miss", "x")]:
         calc = scores.count(c)
         should = replay["judgements"][j]
         timestamp = replay["timestamp"]
@@ -283,8 +283,8 @@ def create_auto_replay(map):
         releases.append(cur_note_time + 10)
 
     judgements = {
-        "300": len(keys),
-        "100": 0,
+        "great": len(keys),
+        "ok": 0,
         "miss": 0,
     }
 

@@ -11,14 +11,14 @@ export function msToNote(ms: number) {
 
 // TODO: rename these to be less annoying
 export interface Judgements {
-  "300": number;
-  "100": number;
+  great: number;
+  ok: number;
   miss: number;
 }
 
 export function judgementsToAcc(judgements: Judgements) {
-  const total = judgements["300"] + judgements["100"] + judgements.miss;
-  return ((judgements["300"] + judgements["100"] / 3) / total) * 100;
+  const total = judgements.great + judgements.ok + judgements.miss;
+  return ((judgements.great + judgements.ok / 3) / total) * 100;
 }
 
 export interface JSONReplay {
@@ -95,8 +95,8 @@ class ScorePrefixSums {
 
   queryAll(index: number): Judgements {
     return {
-      "300": this.query(ReplayScore.Great, index),
-      "100": this.query(ReplayScore.Ok, index),
+      great: this.query(ReplayScore.Great, index),
+      ok: this.query(ReplayScore.Ok, index),
       miss: this.query(ReplayScore.Miss, index),
     };
   }
