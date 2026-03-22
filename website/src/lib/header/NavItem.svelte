@@ -1,19 +1,25 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
-  import { tab, type Tab } from "./tab.svelte";
+  import { defaultTab, tab, type Tab } from "./tab.svelte";
 
   let { id, children }: { id: Tab; children: Snippet } = $props();
 
   let selected = $derived(id === tab.value);
+
+  function onclick(e: Event) {
+    e.preventDefault();
+    if (selected) {
+      // hide tabs if clicking selected, but don't change the url
+      tab.value = "none";
+    } else {
+      tab.value = id;
+      location.replace(id === defaultTab ? "#" : `#${id}`);
+    }
+  }
 </script>
 
 <div class={{ container: true, selected }}>
-  <a
-    href="#{id}"
-    onclick={() => {
-      tab.value = id;
-    }}
-  >
+  <a href={id === defaultTab ? "#" : `#${id}`} {onclick}>
     {@render children()}
   </a>
 </div>
@@ -26,7 +32,6 @@
     text-align: center;
     background-color: var(--dark-bg);
     border-bottom: 1px solid var(--red-border);
-    padding: 3px;
   }
 
   .container:not(:last-child) {
@@ -35,8 +40,10 @@
 
   a {
     display: block;
+    box-sizing: border-box;
     width: 100%;
     height: 100%;
+    padding: 3px;
   }
 
   .container:hover {
