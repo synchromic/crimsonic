@@ -1,11 +1,11 @@
 <script lang="ts">
+  import { audioCtx } from "./audio";
+
   let {
-    audioCtx,
     initial,
     gainNode,
     label,
   }: {
-    audioCtx: AudioContext;
     initial: number;
     gainNode: GainNode;
     label: string;

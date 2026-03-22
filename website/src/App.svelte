@@ -1,6 +1,6 @@
 <script lang="ts">
   import Scrubber from "./lib/Scrubber.svelte";
-  import Audio from "./lib/Audio.svelte";
+  import Audio from "./lib/audio/Audio.svelte";
   import { options } from "./lib/options.svelte";
   import ReplayContainer from "./lib/replay/ReplayContainer.svelte";
 
