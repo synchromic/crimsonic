@@ -64,6 +64,5 @@
   .stats {
     border: 1px solid;
     padding: 5px;
-    box-sizing: border-box;
   }
 </style>

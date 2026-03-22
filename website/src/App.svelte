@@ -28,7 +28,6 @@
 
 <style>
   main {
-    box-sizing: border-box;
     height: 100vh;
     width: 100%;
     padding-left: 10px;

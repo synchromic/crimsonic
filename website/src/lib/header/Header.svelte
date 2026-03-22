@@ -67,7 +67,6 @@
   }
 
   .nav-items {
-    box-sizing: border-box;
     width: 100%;
     display: flex;
     flex-direction: row;
