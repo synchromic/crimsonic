@@ -8,6 +8,7 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
+  --dark-bg: #0d0500;
   --red-border: #cc5500;
 }
 

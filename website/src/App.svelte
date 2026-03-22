@@ -7,7 +7,7 @@
   import autoReplayJSON from "./assets/gen/auto_replay.json";
   import { Replay } from "./lib/replay/replay";
   import Background from "./lib/background/Background.svelte";
-  import Header from "./lib/Header.svelte";
+  import Header, { HEADER_HEIGHT } from "./lib/header/Header.svelte";
 
   const autoReplay = new Replay(autoReplayJSON);
   // TODO: get hovered replay to play hitsounds
@@ -15,7 +15,7 @@
 
 <Background />
 <Header />
-<main>
+<main style="margin-top: {-HEADER_HEIGHT}px; padding-top: {HEADER_HEIGHT}px">
   <p>hello!</p>
   <Audio playingReplay={autoReplay} />
   <div>
@@ -28,13 +28,13 @@
 
 <style>
   main {
-    width: 90%;
-    padding: 0 10px;
-    margin: auto;
+    box-sizing: border-box;
+    height: 100vh;
+    width: 100%;
+    padding-left: 10px;
+    padding-right: 10px;
     display: flex;
     flex-direction: column;
-    border-left: 1px solid var(--red-border);
-    border-right: 1px solid var(--red-border);
     backdrop-filter: blur(10px);
   }
 </style>
