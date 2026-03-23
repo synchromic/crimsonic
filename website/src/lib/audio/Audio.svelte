@@ -123,9 +123,4 @@
   });
 </script>
 
-<div>
-  <audio src="audio.ogg" bind:this={element}></audio>
-  <VolumeSlider initial={0.3} gainNode={gains.master} label="Master volume" />
-  <VolumeSlider initial={1} gainNode={gains.music} label="Music volume" />
-  <VolumeSlider initial={0.8} gainNode={gains.effect} label="Hitsound volume" />
-</div>
+<audio src="audio.ogg" bind:this={element}></audio>

@@ -2,7 +2,11 @@
   import type { Snippet } from "svelte";
   import { defaultTab, tab, type Tab } from "./tab.svelte";
 
-  let { id, children }: { id: Tab; children: Snippet } = $props();
+  let {
+    id,
+    side,
+    children,
+  }: { id: Tab; side: "left" | "right"; children: Snippet } = $props();
 
   let selected = $derived(id === tab.value);
 
@@ -18,7 +22,7 @@
   }
 </script>
 
-<div class={{ container: true, selected }}>
+<div class={["container", side, selected ? "selected" : ""]}>
   <a href={id === defaultTab ? "#" : `#${id}`} {onclick}>
     {@render children()}
   </a>
@@ -30,12 +34,16 @@
     flex-grow: 1;
     font-size: 1.5em;
     text-align: center;
-    background-color: var(--dark-bg);
+    background-color: var(--dark-bg-alpha);
     border-bottom: 1px solid var(--red-border);
   }
 
-  .container:not(:last-child) {
+  .container.left {
     border-right: 1px solid var(--red-border);
+  }
+
+  .container.right {
+    border-left: 1px solid var(--red-border);
   }
 
   a {
@@ -45,14 +53,15 @@
     padding: 3px;
   }
 
-  .container:hover {
-    background-color: color-mix(in srgb, var(--dark-bg), #fff 10%);
-  }
-
   .container.selected {
-    background-color: inherit;
+    background-color: var(--dark-bg);
 
     /* can't set it to none because things would shift */
     border-bottom: 1px solid transparent;
+  }
+
+  .container:hover,
+  .container.selected:hover {
+    background-color: color-mix(in srgb, var(--dark-bg-alpha), #ffff 10%);
   }
 </style>

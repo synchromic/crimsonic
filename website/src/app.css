@@ -19,7 +19,8 @@ html {
   -moz-osx-font-smoothing: grayscale;
 
   --dark-bg: #0d0500;
-  --red-border: #cc5500;
+  --dark-bg-alpha: #0d0500cc;
+  --red-border: #c50;
 }
 
 body {

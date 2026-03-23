@@ -1,15 +1,17 @@
 <script lang="ts">
-  import { audioCtx } from "./audio";
+  import { audioCtx, gains } from "./audio";
 
   let {
+    id,
     initial,
-    gainNode,
     label,
   }: {
+    id: string;
     initial: number;
-    gainNode: GainNode;
     label: string;
   } = $props();
+
+  let gainNode = $derived(gains[id]);
 
   // svelte-ignore state_referenced_locally
   let value = $state(initial);
@@ -21,6 +23,6 @@
 </script>
 
 <div>
-  <input id="range" type="range" min={0} max={1} step={0.01} bind:value />
-  <label for="range">{label}: {valueText}</label>
+  <input {id} type="range" min={0} max={1} step={0.01} bind:value />
+  <label for={id}>{label}: {valueText}</label>
 </div>
