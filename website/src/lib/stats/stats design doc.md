@@ -1,4 +1,4 @@
-= Statistics
+# Statistics
 
 A statistic is a numerical score. Statistics have a few properties:
 - A *name* - what does this statistic represent?
@@ -9,7 +9,7 @@ A statistic is a numerical score. Statistics have a few properties:
 
 A statistic is generic over its parent type and reference type.
 
-== Objects
+## Objects
 
 We have a few different types of *objects* that we want to compute statistics for. These are:
 - Replays
@@ -20,15 +20,15 @@ We have a few different types of *objects* that we want to compute statistics fo
 
 We can take unions of these object types if they share attributes (e.g. accuracy for a note/measure/replay), so important properties should be easily accessible.
 
-== Calculators
+## Calculators
 
 Statistics are produced by *calculators*. All calculators are created on first load, and can choose to precompute some data. Calculators are specific to an object type or a union of object types. Calculators can call other calculators.
 
-== Rankings
+## Rankings
 
 TODO: figure out how rankings should work in a not-slow way. Not really a priority
 
-= List of statistics to implement
+# List of statistics to implement
 
 | X | Parent | Reference | Category | Description |
 |---|--------|-----------|----------|-------------|
@@ -36,8 +36,8 @@ TODO: figure out how rankings should work in a not-slow way. Not really a priori
 |   | Overall | Replay | Accuracy | Worst accuracy |
 |   | Overall | Replay note | Combo | Best combo |
 |   | Overall | Replay note | Combo | Worst combo |
-|   | Replay | Replay note | Combo | Best combo |
-|   | Replay | Replay note | Combo | Worst combo |
+|   | Replay | Replay note | Combo | Best combo in replay |
+|   | Replay | Replay note | Combo | Worst combo in replay |
 |   | Overall | Note | Misc | Hardest note |
 |   | Overall | Measure | Misc | Hardest measure |
 |   | Note | Replay | Misc | First time hitting this note |
