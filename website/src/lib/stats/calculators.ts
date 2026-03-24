@@ -6,7 +6,7 @@ import type {
   Reference,
   ReplayNoteObject,
   ReplayObject,
-} from "./statsObject";
+} from "./statsObject.svelte";
 
 export const calculators: {
   overall: Calculator<OverallObject, Reference>[];

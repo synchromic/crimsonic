@@ -1,12 +1,12 @@
 import type { Replay } from "../replay/replay";
 import { calculators } from "./calculators";
-import type { Statistic } from "./statistic";
+import type { Statistic } from "./Statistic.svelte";
 
-interface Referenceable {
+export interface Referenceable {
   reference(): string;
 }
 
-export type Reference = Referenceable | void;
+export type Reference = Referenceable | undefined;
 
 export abstract class StatsObject {
   abstract getStats(): Statistic<Reference>[];
@@ -75,3 +75,7 @@ export class ReplayNoteObject implements StatsObject, Referenceable {
     return calculators.replayNote.flatMap((calc) => calc.compute(this));
   }
 }
+
+export const selectedObject: { value: StatsObject } = $state({
+  value: new OverallObject(),
+});

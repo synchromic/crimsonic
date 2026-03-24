@@ -1,6 +1,7 @@
 <script>
   import { tab } from "../header/tab.svelte";
-  import Settings from "./SettingsTab.svelte";
+  import SettingsTab from "./SettingsTab.svelte";
+  import StatsTab from "./StatsTab.svelte";
 
   function onclick() {
     tab.value = "none";
@@ -21,8 +22,10 @@
     </button>
     {#if tab.value === "main"}
       <div>hello!</div>
+    {:else if tab.value === "stats"}
+      <StatsTab />
     {:else if tab.value === "settings"}
-      <Settings />
+      <SettingsTab />
     {/if}
   </div>
 {/if}

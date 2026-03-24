@@ -1,7 +1,7 @@
 import { replays, type Replay } from "../../replay/replay";
 import type { Calculator } from "./calculator";
-import { Statistic } from "../statistic";
-import { ReplayObject, type OverallObject } from "../statsObject";
+import { Statistic } from "../Statistic.svelte";
+import { ReplayObject, type OverallObject } from "../statsObject.svelte";
 
 export class AccuracyCalculator implements Calculator<
   OverallObject,
