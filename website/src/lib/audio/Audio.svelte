@@ -119,7 +119,6 @@
 
   onDestroy(() => {
     cancelHitsounds();
-    audioCtx.close();
   });
 </script>
 

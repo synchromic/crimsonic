@@ -1,16 +1,14 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import jsonReplays from "../../assets/gen/replays.json";
-  import { Replay } from "./replay";
-  import Stats from "../stats/Stats.svelte";
+  import { replays } from "./replay";
+  import Stats from "../stats/ReplayStats.svelte";
   import Playfield from "../playfield/Playfield.svelte";
   import type { Attachment } from "svelte/attachments";
   import Scrubber from "../Scrubber.svelte";
 
-  let replays: Replay[] = $state([]);
   let elem: HTMLDivElement;
-  let observer: IntersectionObserver;
-  let visibility = $state(jsonReplays.map((_) => false));
+  let observer = $state<IntersectionObserver>();
+  let visibility = $state(replays.map((_) => false));
 
   function intersectionCallback(entries: IntersectionObserverEntry[]) {
     for (const entry of entries) {
@@ -21,14 +19,14 @@
   }
 
   const attachReplay: Attachment = (element) => {
+    if (!observer) return; // attachment will be called again once observer is set
     observer.observe(element);
     return () => {
-      observer.unobserve(element);
+      observer?.unobserve(element);
     };
   };
 
   onMount(() => {
-    replays = jsonReplays.map((r) => new Replay(r));
     observer = new IntersectionObserver(intersectionCallback, {
       root: elem,
       rootMargin: "0px 0px 50px 0px",

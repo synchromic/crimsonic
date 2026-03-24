@@ -1,4 +1,4 @@
-const tabs = ["none", "main", "about", "settings"] as const;
+const tabs = ["none", "main", "stats", "about", "settings"] as const;
 export type Tab = (typeof tabs)[number];
 
 export const defaultTab: Tab = "main";

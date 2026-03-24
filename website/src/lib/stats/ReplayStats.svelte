@@ -1,6 +1,6 @@
 <script lang="ts">
   import { playbackState } from "../playbackState.svelte";
-  import { msToNote, ReplayScore, type Replay } from "../replay/replay";
+  import { msToNote, type Replay } from "../replay/replay";
   import AccPieChart from "./AccPieChart.svelte";
 
   // be careful that size does not change whether visible or not
@@ -21,7 +21,7 @@
 </script>
 
 <div id="container">
-  <div>{formatDate(replay.date)}</div>
+  <div>{formatDate(replay.date)} (#{replay.id})</div>
   <div>
     {(replay.accuracy * 100).toFixed(2)}%, {replay.judgements.miss} misses
   </div>

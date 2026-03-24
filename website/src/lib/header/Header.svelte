@@ -7,6 +7,7 @@
     <div class="nav-spacer"></div>
     <div class="nav-items">
       <NavItem side="left" id="main">Main</NavItem>
+      <NavItem side="left" id="stats">Stats</NavItem>
     </div>
   </div>
   <div class="center">
