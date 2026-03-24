@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { replays } from "./replay";
-  import Stats from "../stats/ReplayStats.svelte";
+  import Stats from "../info/ReplayInfo.svelte";
   import Playfield from "../playfield/Playfield.svelte";
   import type { Attachment } from "svelte/attachments";
   import Scrubber from "../Scrubber.svelte";

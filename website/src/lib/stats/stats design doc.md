@@ -7,7 +7,7 @@ A statistic is a numerical score. Statistics have a few properties:
 - A *parent* - the object this statistic applies to. Can be "overall", meaning this statistic applies over all replays, or it can be specific to a replay, note, or other object.
 - (Optional) A *reference* - an object that this statistic applies to. An example would be, for the overall statistic of "highest accuracy replay", the reference would be to the replay with the highest accuracy. Useful if the user wishes to click on a link to said replay.
 
-A statistic is generic over its parent type and reference type.
+The statistic type is generic over its parent type and reference type.
 
 ## Objects
 
@@ -22,7 +22,7 @@ We can take unions of these object types if they share attributes (e.g. accuracy
 
 ## Calculators
 
-Statistics are produced by *calculators*. All calculators are created on first load, and can choose to precompute some data. Calculators are specific to an object type or a union of object types. Calculators can call other calculators.
+Statistics are produced by *calculators*. All calculators are created on first load, and can choose to precompute some data. Calculators are specific to an object type or a union of object types. Calculators can call other calculators. For especially computation-heavy calculations (if any), the work can be precomputed in Python and loaded into a calculator by the frontend.
 
 ## Rankings
 
@@ -34,6 +34,9 @@ TODO: figure out how rankings should work in a not-slow way. Not really a priori
 |---|--------|-----------|----------|-------------|
 |   | Overall | Replay | Accuracy | Best accuracy |
 |   | Overall | Replay | Accuracy | Worst accuracy |
+|   | Overall | N/A | Accuracy | Average accuracy |
+|   | Measure | N/A | Accuracy | Average accuracy |
+|   | Note | N/A | Accuracy | Average accuracy |
 |   | Overall | Replay note | Combo | Best combo |
 |   | Overall | Replay note | Combo | Worst combo |
 |   | Replay | Replay note | Combo | Best combo in replay |
