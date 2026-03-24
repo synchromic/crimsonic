@@ -5,6 +5,7 @@
   import Stats from "../stats/Stats.svelte";
   import Playfield from "../playfield/Playfield.svelte";
   import type { Attachment } from "svelte/attachments";
+  import Scrubber from "../Scrubber.svelte";
 
   let replays: Replay[] = $state([]);
   let elem: HTMLDivElement;
@@ -35,23 +36,32 @@
   });
 </script>
 
-<div id="outer" bind:this={elem}>
-  {#each replays as replay, index}
-    <div class="stats" data-index={index} {@attach attachReplay}>
-      <Stats {replay} visible={visibility[index]} />
-    </div>
-    <div class="playfield">
-      <Playfield {replay} visible={visibility[index]} />
-    </div>
-  {/each}
+<div id="container">
+  <Scrubber />
+  <div id="outer" bind:this={elem}>
+    {#each replays as replay, index}
+      <div class="stats" data-index={index} {@attach attachReplay}>
+        <Stats {replay} visible={visibility[index]} />
+      </div>
+      <div class="playfield">
+        <Playfield {replay} visible={visibility[index]} />
+      </div>
+    {/each}
+  </div>
 </div>
 
 <style>
-  #outer {
+  #container {
     flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 0 10px;
+  }
+
+  #outer {
+    flex: 1 1 0;
     margin-bottom: 10px;
     max-width: 100%;
-    max-height: 95vh;
     display: grid;
     grid-template-columns: max-content auto;
     grid-auto-rows: max-content;
@@ -64,6 +74,5 @@
   .stats {
     border: 1px solid;
     padding: 5px;
-    box-sizing: border-box;
   }
 </style>

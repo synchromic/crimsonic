@@ -1,40 +1,41 @@
 <script lang="ts">
   import Scrubber from "./lib/Scrubber.svelte";
-  import Audio from "./lib/Audio.svelte";
-  import { options } from "./lib/options.svelte";
+  import Audio from "./lib/audio/Audio.svelte";
   import ReplayContainer from "./lib/replay/ReplayContainer.svelte";
 
   import autoReplayJSON from "./assets/gen/auto_replay.json";
   import { Replay } from "./lib/replay/replay";
   import Background from "./lib/background/Background.svelte";
-  import Header from "./lib/Header.svelte";
+  import Header from "./lib/header/Header.svelte";
+  import TabContainer from "./lib/tabs/TabContainer.svelte";
 
   const autoReplay = new Replay(autoReplayJSON);
   // TODO: get hovered replay to play hitsounds
 </script>
 
 <Background />
-<Header />
-<main>
-  <p>hello!</p>
-  <Audio playingReplay={autoReplay} />
-  <div>
-    <label for="flyInput">Fly notes?</label>
-    <input type="checkbox" id="flyInput" bind:checked={options.flyNotes} />
-  </div>
-  <Scrubber />
-  <ReplayContainer />
-</main>
+<Audio playingReplay={autoReplay} />
+<div id="body">
+  <Header />
+  <main>
+    <TabContainer />
+    <ReplayContainer />
+  </main>
+</div>
 
 <style>
-  main {
-    width: 90%;
-    padding: 0 10px;
-    margin: auto;
+  #body {
+    height: 100vh;
+    width: 100%;
     display: flex;
     flex-direction: column;
-    border-left: 1px solid var(--red-border);
-    border-right: 1px solid var(--red-border);
     backdrop-filter: blur(10px);
+  }
+
+  main {
+    flex: 1 1 0;
+    height: auto;
+    display: flex;
+    flex-direction: column;
   }
 </style>

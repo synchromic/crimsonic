@@ -1,3 +1,13 @@
+html {
+  box-sizing: border-box;
+}
+
+*,
+*:before,
+*:after {
+  box-sizing: inherit;
+}
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
 
@@ -8,7 +18,9 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  --red-border: #cc5500;
+  --dark-bg: #0d0500;
+  --dark-bg-alpha: #0d0500cc;
+  --red-border: #c50;
 }
 
 body {

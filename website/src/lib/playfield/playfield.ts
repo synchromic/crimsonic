@@ -29,13 +29,16 @@ export function msToPos(ms: number) {
   return ms * pixelsPerMs;
 }
 
-function* iterateNotes(t: number, svgWidth: number) {
-  const leeway = 0;
+function* iterateNotes(timeF: number, svgWidth: number) {
+  const leeway = noteWidth;
   const maxNote = Math.min(
     map.notes.length - 1,
-    Math.ceil(msToNote(screenPosToMs(t, svgWidth + leeway))),
+    Math.ceil(msToNote(screenPosToMs(timeF, svgWidth + leeway))),
   );
-  const minNote = Math.max(0, Math.floor(msToNote(screenPosToMs(t, -leeway))));
+  const minNote = Math.max(
+    0,
+    Math.floor(msToNote(screenPosToMs(timeF, -leeway))),
+  );
   for (let i = maxNote; i >= minNote; i--) {
     yield i;
   }
@@ -64,7 +67,7 @@ export function visibleNotes(
 // barlines appear every 16 notes
 // returns list of x positions
 export function visibleBarlines(timeF: number, svgWidth: number) {
-  const leeway = 10;
+  const leeway = 10 + noteWidth;
   const maxBar = Math.ceil(
     msToNote(screenPosToMs(timeF, svgWidth + leeway)) / 16.0,
   );
@@ -77,7 +80,7 @@ export function visibleBarlines(timeF: number, svgWidth: number) {
 }
 
 export function visibleEvents(replay: Replay, timeF: number, svgWidth: number) {
-  const leeway = 50;
+  const leeway = 50 + noteWidth;
   const leftMs = screenPosToMs(timeF, -leeway);
   const rightMs = screenPosToMs(timeF, svgWidth + leeway);
   return replay.eventsIntersecting(leftMs, rightMs);
