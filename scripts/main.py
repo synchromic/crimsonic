@@ -81,6 +81,17 @@ def deltas(a):
     return arr
 
 
+def to_base36(n):
+    alphabet = "0123456789abcdefghijklmnopqrstuvwxyz"
+    res = ""
+    if 0 <= n < len(alphabet):
+        return alphabet[n]
+    while n != 0:
+        n, i = divmod(n, len(alphabet))
+        res = alphabet[i] + res
+    return res
+
+
 def parse_replay(path):
     replay = Replay.from_path(f"replays/{path}")
     if replay.mode != osrparse.GameMode.TAIKO:
@@ -138,7 +149,11 @@ def parse_replay(path):
     total_notes = judgements["great"] + judgements["ok"] + judgements["miss"]
     accuracy = (judgements["great"] + judgements["ok"] / 3) / total_notes
 
+    timestamp_micros = int(replay.timestamp.timestamp() * 1e6)
+    id = to_base36(timestamp_micros).zfill(5)[-5:]
+
     return {
+        "id": id,
         "timestamp": replay.timestamp,
         "accuracy": accuracy,
         "judgements": judgements,
@@ -289,6 +304,7 @@ def create_auto_replay(map):
     }
 
     replay = {
+        "id": "mocha",
         "timestamp": datetime.fromisoformat("2001-09-11 14:00:00.000000+00:00"),
         "accuracy": 100.0,
         "judgements": judgements,

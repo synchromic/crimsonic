@@ -23,6 +23,7 @@ export function judgementsToAcc(judgements: Judgements) {
 }
 
 export interface JSONReplay {
+  id: string;
   timestamp: string;
   accuracy: number;
   judgements: Judgements;
@@ -44,13 +45,6 @@ export enum ReplayScore {
   Great = "3",
   Ok = "1",
   Miss = "x",
-}
-
-// short identifier for the replay
-// base 36 representation of timestamp
-function replayId(json: JSONReplay) {
-  const timestamp = new Date(json.timestamp);
-  return timestamp.getTime().toString(36).padStart(5, "0").slice(-5);
 }
 
 function fromDeltas(arr: number[]) {
@@ -124,7 +118,7 @@ export class Replay {
   judgements: Judgements;
 
   constructor(json: JSONReplay) {
-    this.id = replayId(json);
+    this.id = json.id;
     this.date = new Date(json.timestamp);
     this.scores = json.scores;
     this.eventTree = new IntervalTree();
