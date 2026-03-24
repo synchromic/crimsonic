@@ -32,9 +32,10 @@ TODO: figure out how rankings should work in a not-slow way. Not really a priori
 
 | X | Parent | Reference | Category | Description |
 |---|--------|-----------|----------|-------------|
-|   | Overall | Replay | Accuracy | Best accuracy |
-|   | Overall | Replay | Accuracy | Worst accuracy |
-|   | Overall | N/A | Accuracy | Average accuracy |
+| X | Overall | Replay | Accuracy | Best accuracy |
+| X | Overall | Replay | Accuracy | Worst accuracy |
+| X | Overall | Replay | Accuracy | Median accuracy |
+| X | Overall | N/A | Accuracy | Average accuracy |
 |   | Measure | N/A | Accuracy | Average accuracy |
 |   | Note | N/A | Accuracy | Average accuracy |
 |   | Overall | Replay note | Combo | Best combo |

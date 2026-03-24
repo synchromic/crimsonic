@@ -11,7 +11,7 @@
     value: number;
     category: Category;
     ref: R;
-    display?: () => string;
+    display?: (value: number) => string;
   }
 
   export class Statistic<R extends Reference> {
@@ -20,7 +20,7 @@
     value: number;
     category: Category;
     ref: R;
-    display: () => string;
+    display: (value: number) => string;
 
     constructor({
       name,
@@ -35,7 +35,7 @@
       this.value = value;
       this.category = category;
       this.ref = ref;
-      this.display = display ?? (() => this.value.toFixed(2));
+      this.display = display ?? ((value) => value.toFixed(2));
     }
   }
 </script>
@@ -45,7 +45,7 @@
 </script>
 
 <div>
-  {statistic.description}: {statistic.display()}
+  {statistic.description}: {statistic.display(statistic.value)}
   {#if statistic.ref !== undefined}
     (<ReferenceLink reference={statistic.ref} />)
   {/if}
