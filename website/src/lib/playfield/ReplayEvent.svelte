@@ -25,4 +25,5 @@
   height={20}
   stroke="#111111"
   fill={color}
+  style="pointer-events: none;"
 />

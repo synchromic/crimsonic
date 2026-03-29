@@ -3,13 +3,14 @@ import { calculators } from "./calculators";
 import type { Statistic } from "./Statistic.svelte";
 
 export interface Referenceable {
-  reference(): string;
+  reference(): string; // display string for a clickable link to this object
 }
 
 export type Reference = Referenceable | undefined;
 
 export abstract class StatsObject {
   abstract getStats(): Statistic<Reference>[];
+  abstract name(): string;
 }
 
 export class OverallObject implements StatsObject {
@@ -20,6 +21,10 @@ export class OverallObject implements StatsObject {
 
   getStats(): Statistic<Reference>[] {
     return calculators.overall.flatMap((calc) => calc.compute(this));
+  }
+
+  name() {
+    return "playfield";
   }
 }
 
@@ -38,6 +43,10 @@ export class ReplayObject implements StatsObject, Referenceable {
   getStats(): Statistic<Reference>[] {
     return calculators.replay.flatMap((calc) => calc.compute(this));
   }
+
+  name() {
+    return `replay #${this.replay.id}`;
+  }
 }
 
 export class NoteObject implements StatsObject, Referenceable {
@@ -54,6 +63,10 @@ export class NoteObject implements StatsObject, Referenceable {
 
   getStats(): Statistic<Reference>[] {
     return calculators.note.flatMap((calc) => calc.compute(this));
+  }
+
+  name() {
+    return `note ${this.index}`;
   }
 }
 
@@ -73,6 +86,10 @@ export class ReplayNoteObject implements StatsObject, Referenceable {
 
   getStats(): Statistic<Reference>[] {
     return calculators.replayNote.flatMap((calc) => calc.compute(this));
+  }
+
+  name() {
+    return `replay #${this.replay.id} note ${this.index}`;
   }
 }
 

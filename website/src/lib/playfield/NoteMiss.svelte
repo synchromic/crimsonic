@@ -23,4 +23,10 @@
   const pointsStr = $derived(points.map((tup) => tup.join(",")).join("\n"));
 </script>
 
-<polygon points={pointsStr} fill="#FF0000" stroke="#000000" stroke-width={1} />
+<polygon
+  points={pointsStr}
+  fill="#FF0000"
+  stroke="#000000"
+  stroke-width={1}
+  style="pointer-events: none;"
+/>

@@ -177,3 +177,4 @@ export class Replay {
 }
 
 export const replays = jsonReplays.map((j) => new Replay(j));
+export const replaysById = new Map(replays.map((r) => [r.id, r]));

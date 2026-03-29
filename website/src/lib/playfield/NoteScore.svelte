@@ -15,4 +15,11 @@
   const width = $derived(nextX - x);
 </script>
 
-<rect {x} y={0} {width} height={100} fill={color} />
+<rect
+  {x}
+  y={0}
+  {width}
+  height={100}
+  fill={color}
+  style="pointer-events: none;"
+/>

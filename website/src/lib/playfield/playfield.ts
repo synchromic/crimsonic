@@ -9,6 +9,7 @@ import {
 } from "../replay/replay";
 
 export interface SVGNote {
+  replay: Replay;
   index: number;
   x: number;
   kind: string;
@@ -53,6 +54,7 @@ export function visibleNotes(
   for (let i of iterateNotes(timeF, svgWidth)) {
     if (map.notes[i] !== " ") {
       result.push({
+        replay,
         index: i,
         x: msToPos(noteToMs(i)),
         kind: map.notes[i],

@@ -4,7 +4,7 @@ import { Statistic } from "../Statistic.svelte";
 import { ReplayObject, type OverallObject } from "../statsObject.svelte";
 
 function displayAcc(value: number): string {
-  return (value * 100).toFixed(2);
+  return (value * 100).toFixed(2) + "%";
 }
 
 export class AccuracyCalculator implements Calculator<
