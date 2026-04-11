@@ -10,23 +10,51 @@ export function msToNote(ms: number) {
   return (ms - map.start_offset) / map.ms_per_note;
 }
 
-// TODO: rename these to be less annoying
-export interface Judgements {
+interface JSONJudgements {
   great: number;
   ok: number;
   miss: number;
 }
 
-export function judgementsToAcc(judgements: Judgements) {
-  const total = judgements.great + judgements.ok + judgements.miss;
-  return ((judgements.great + judgements.ok / 3) / total) * 100;
+export class Judgements {
+  great: number;
+  ok: number;
+  miss: number;
+
+  constructor(judgements?: JSONJudgements) {
+    this.great = judgements?.great ?? 0;
+    this.ok = judgements?.ok ?? 0;
+    this.miss = judgements?.miss ?? 0;
+  }
+
+  add(...scores: ReplayScore[]) {
+    for (const score of scores) {
+      switch (score) {
+        case ReplayScore.Great:
+          this.great += 1;
+          break;
+        case ReplayScore.Ok:
+          this.ok += 1;
+          break;
+        case ReplayScore.Miss:
+          this.miss += 1;
+          break;
+      }
+    }
+  }
+
+  // returns the decimal, not percentage
+  toAcc() {
+    const total = this.great + this.ok + this.miss;
+    return (this.great + this.ok / 3) / total;
+  }
 }
 
 export interface JSONReplay {
   id: string;
   timestamp: string;
   accuracy: number;
-  judgements: Judgements;
+  judgements: JSONJudgements;
   keys: string;
   press_time_deltas: number[];
   release_time_deltas: number[];
@@ -96,11 +124,11 @@ class ScorePrefixSums {
   }
 
   queryAll(index: number): Judgements {
-    return {
+    return new Judgements({
       great: this.query(ReplayScore.Great, index),
       ok: this.query(ReplayScore.Ok, index),
       miss: this.query(ReplayScore.Miss, index),
-    };
+    });
   }
 }
 
@@ -157,7 +185,7 @@ export class Replay {
       }
     }
     this.accuracy = json.accuracy;
-    this.judgements = json.judgements;
+    this.judgements = new Judgements(json.judgements);
   }
 
   eventsIntersecting(start: number, end: number): ReplayEvent[] {

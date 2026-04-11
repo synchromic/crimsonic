@@ -74,7 +74,6 @@
   }
 
   function onclick() {
-    console.log("note clicked");
     toggleSelected();
   }
 

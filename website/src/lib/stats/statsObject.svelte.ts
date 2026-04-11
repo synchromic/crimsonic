@@ -85,7 +85,7 @@ export class ReplayNoteObject implements StatsObject, Referenceable {
   }
 
   getStats(): Statistic<Reference>[] {
-    return calculators.replayNote.flatMap((calc) => calc.compute(this));
+    return [...calculators.replayNote.flatMap((calc) => calc.compute(this))];
   }
 
   name() {

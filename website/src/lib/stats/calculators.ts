@@ -1,6 +1,7 @@
 import {
   AccuracyCalculator,
   MeanAccuracyCalculator,
+  NoteMeanAccuracyCalculator,
 } from "./calculators/accuracy";
 import type { Calculator } from "./calculators/calculator";
 import type {
@@ -19,6 +20,6 @@ export const calculators: {
 } = {
   overall: [new AccuracyCalculator(), new MeanAccuracyCalculator()],
   replay: [],
-  note: [],
-  replayNote: [],
+  note: [new NoteMeanAccuracyCalculator()],
+  replayNote: [new NoteMeanAccuracyCalculator()],
 };

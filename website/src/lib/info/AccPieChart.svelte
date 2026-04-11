@@ -1,14 +1,10 @@
 <script lang="ts">
   import { scoreColor } from "../playfield/playfield";
-  import {
-    judgementsToAcc,
-    ReplayScore,
-    type Judgements,
-  } from "../replay/replay";
+  import { ReplayScore, type Judgements } from "../replay/replay";
   import AccPieChartArc from "./AccPieChartArc.svelte";
 
   let { size, judgements }: { size: number; judgements: Judgements } = $props();
-  let accuracy = $derived(judgementsToAcc(judgements));
+  let accuracy = $derived(judgements.toAcc() * 100);
   let accText = $derived(accuracy.toFixed(2) + "%");
   let total = $derived(judgements.great + judgements.ok + judgements.miss);
 </script>

@@ -1,7 +1,12 @@
-import { replays, type Replay } from "../../replay/replay";
+import { Judgements, replays, type Replay } from "../../replay/replay";
 import type { Calculator } from "./calculator";
 import { Statistic } from "../Statistic.svelte";
-import { ReplayObject, type OverallObject } from "../statsObject.svelte";
+import {
+  NoteObject,
+  ReplayNoteObject,
+  ReplayObject,
+  type OverallObject,
+} from "../statsObject.svelte";
 
 function displayAcc(value: number): string {
   return (value * 100).toFixed(2) + "%";
@@ -69,6 +74,39 @@ export class MeanAccuracyCalculator implements Calculator<
         name: "meanAcc",
         description: "Mean accuracy",
         value: this.average,
+        category: "accuracy",
+        ref: undefined,
+        display: displayAcc,
+      }),
+    ];
+  }
+}
+
+export class NoteMeanAccuracyCalculator implements Calculator<
+  NoteObject | ReplayNoteObject,
+  undefined
+> {
+  averages: Map<number, number> = new Map(); // cached index -> average
+
+  constructor() {}
+
+  getAccuracy(index: number): number {
+    if (this.averages.has(index)) return this.averages.get(index)!;
+    let judgements = new Judgements();
+    judgements.add(
+      ...replays.map((r) => r.scoreAt(index)).filter((s) => s !== null),
+    );
+    const acc = judgements.toAcc();
+    this.averages.set(index, acc);
+    return acc;
+  }
+
+  compute(parent: NoteObject | ReplayNoteObject): Statistic<undefined>[] {
+    return [
+      new Statistic({
+        name: "noteMeanAcc",
+        description: "Mean accuracy",
+        value: this.getAccuracy(parent.index),
         category: "accuracy",
         ref: undefined,
         display: displayAcc,
