@@ -1,6 +1,5 @@
 import type { Replay } from "../replay/replay";
-import { calculators } from "./calculators";
-import type { Statistic } from "./Statistic.svelte";
+import { calculators, type Statistic } from "./stats.svelte";
 
 export interface Referenceable {
   reference(): string; // display string for a clickable link to this object
@@ -14,13 +13,10 @@ export abstract class StatsObject {
 }
 
 export class OverallObject implements StatsObject {
-  // brand that prevents other objects from being used in place of this one
-  readonly _kind: "overall" = "overall";
-
   constructor() {}
 
   getStats(): Statistic<Reference>[] {
-    return calculators.overall.flatMap((calc) => calc.compute(this));
+    return calculators.overall.flatMap((calc) => calc(this));
   }
 
   name() {
@@ -29,7 +25,6 @@ export class OverallObject implements StatsObject {
 }
 
 export class ReplayObject implements StatsObject, Referenceable {
-  readonly _kind: "replay" = "replay";
   replay: Replay;
 
   constructor(replay: Replay) {
@@ -41,7 +36,7 @@ export class ReplayObject implements StatsObject, Referenceable {
   }
 
   getStats(): Statistic<Reference>[] {
-    return calculators.replay.flatMap((calc) => calc.compute(this));
+    return calculators.replay.flatMap((calc) => calc(this));
   }
 
   name() {
@@ -50,7 +45,6 @@ export class ReplayObject implements StatsObject, Referenceable {
 }
 
 export class NoteObject implements StatsObject, Referenceable {
-  readonly _kind: "note" = "note";
   index: number;
 
   constructor(index: number) {
@@ -62,7 +56,7 @@ export class NoteObject implements StatsObject, Referenceable {
   }
 
   getStats(): Statistic<Reference>[] {
-    return calculators.note.flatMap((calc) => calc.compute(this));
+    return calculators.note.flatMap((calc) => calc(this));
   }
 
   name() {
@@ -71,7 +65,6 @@ export class NoteObject implements StatsObject, Referenceable {
 }
 
 export class ReplayNoteObject implements StatsObject, Referenceable {
-  readonly _kind: "replayNote" = "replayNote";
   replay: Replay;
   index: number;
 
@@ -85,7 +78,7 @@ export class ReplayNoteObject implements StatsObject, Referenceable {
   }
 
   getStats(): Statistic<Reference>[] {
-    return [...calculators.replayNote.flatMap((calc) => calc.compute(this))];
+    return calculators.note.flatMap((calc) => calc(this));
   }
 
   name() {
