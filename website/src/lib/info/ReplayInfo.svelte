@@ -1,20 +1,11 @@
 <script lang="ts">
   import { playbackState } from "../playbackState.svelte";
   import { msToNote, type Replay } from "../replay/replay";
+  import { formatDate } from "../utils";
   import AccPieChart from "./AccPieChart.svelte";
 
   // be careful that size does not change whether visible or not
   const { replay, visible }: { replay: Replay; visible: boolean } = $props();
-
-  function formatDate(date: Date) {
-    return date.toLocaleString(undefined, {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-    });
-  }
 
   let curIndex = $derived(Math.floor(msToNote(playbackState.time)));
   let judgements = $derived(replay.scorePrefixSums.queryAll(curIndex));

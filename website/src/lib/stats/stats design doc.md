@@ -22,7 +22,7 @@ We can take unions of these object types if they share attributes (e.g. accuracy
 
 ## Calculators
 
-Statistics are produced by *calculators*. All calculators are created on first load, and can choose to precompute some data. Calculators are specific to an object type or a union of object types. Calculators can call other calculators. For especially computation-heavy calculations (if any), the work can be precomputed in Python and loaded into a calculator by the frontend.
+Statistics are produced by *calculators*. All calculators are created on first load, and can choose to precompute some data.For especially computation-heavy calculations (if any), the work can be precomputed in Python and loaded into a calculator by the frontend.
 
 ## Rankings
 
@@ -41,8 +41,9 @@ TODO: figure out how rankings should work in a not-slow way. Not really a priori
 |   | Overall | Replay note | Combo | Best combo |
 |   | Overall | Replay note | Combo | Worst combo |
 |   | Replay | Replay note | Combo | Best combo in replay |
-|   | Replay | Replay note | Combo | Worst combo in replay |
 |   | Overall | Note | Misc | Hardest note |
 |   | Overall | Measure | Misc | Hardest measure |
 |   | Note | Replay | Misc | First time hitting this note |
 |   | Measure | Replay | Misc | First time hitting this measure |
+| X | Overall | N/A | Misc | Total replay count |
+| X | Overall | Replay | Misc | Latest replay |

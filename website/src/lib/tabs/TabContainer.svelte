@@ -20,13 +20,15 @@
         />
       </svg>
     </button>
-    {#if tab.value === "main"}
-      <div>hello!</div>
-    {:else if tab.value === "stats"}
-      <StatsTab />
-    {:else if tab.value === "settings"}
-      <SettingsTab />
-    {/if}
+    <div id="tab">
+      {#if tab.value === "main"}
+        <div>hello!</div>
+      {:else if tab.value === "stats"}
+        <StatsTab />
+      {:else if tab.value === "settings"}
+        <SettingsTab />
+      {/if}
+    </div>
   </div>
 {/if}
 
@@ -34,7 +36,8 @@
   #container {
     background-color: var(--dark-bg);
     border-bottom: 1px solid var(--red-border);
-    min-height: 20%;
+    height: 20%;
+    min-height: 200px;
     position: relative;
   }
 
@@ -58,5 +61,9 @@
 
   #hide:hover {
     background-color: color-mix(in srgb, var(--dark-bg) 90%, white);
+  }
+
+  #tab {
+    overflow-y: scroll;
   }
 </style>

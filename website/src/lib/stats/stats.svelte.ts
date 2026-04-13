@@ -1,4 +1,5 @@
 import { loadAccCalculators } from "./calculators/accuracy";
+import { loadMiscCalculators } from "./calculators/misc";
 import type {
   NoteObject,
   OverallObject,
@@ -7,7 +8,7 @@ import type {
   StatsObject,
 } from "./statsObject.svelte";
 
-const categories = ["accuracy"] as const;
+const categories = ["accuracy", "misc"] as const;
 export type Category = (typeof categories)[number];
 
 export interface Statistic<R extends Reference> {
@@ -35,6 +36,7 @@ export const calculators: CalculatorRegistry = {
 };
 
 function loadCalculators() {
+  loadMiscCalculators(calculators);
   loadAccCalculators(calculators);
 }
 
